@@ -145,3 +145,21 @@ h1{
     white-space:pre-wrap;
     color:#333;
 }
+
+.small-textarea{
+    min-height:90px;
+}
+
+.button-submit:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.success-message{
+    color:#16a34a;
+}
+
+.error-message{
+    color:#dc2626;
+}
