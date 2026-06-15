@@ -65,7 +65,11 @@ form.addEventListener("submit", async (event) => {
 
     resultMessage.textContent = "送信中です...";
 
+    const params = new URLSearchParams(window.location.search);
+    const recipientId = params.get("id") || "person1";
+
     const payload = {
+        recipient_id: recipientId,
         name: document.getElementById("name").value,
         message: document.getElementById("message").value
     };

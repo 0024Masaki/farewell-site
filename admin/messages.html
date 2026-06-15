@@ -63,7 +63,12 @@ loadButton.addEventListener("click", async () => {
     messageList.innerHTML = "";
 
     try {
-        const response = await fetch(`/api/messages?key=${encodeURIComponent(key)}`);
+        const params = new URLSearchParams(window.location.search);
+        const recipientId = params.get("id") || "person1";
+
+        const response = await fetch(
+            `/api/messages?key=${encodeURIComponent(key)}&recipient_id=${encodeURIComponent(recipientId)}`
+        );
         const data = await response.json();
 
         if (!data.ok) {

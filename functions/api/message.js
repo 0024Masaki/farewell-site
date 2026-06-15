@@ -3,13 +3,9 @@ export async function onRequestPost(context) {
         const db = context.env.DB;
         const request = context.request;
 
-        const contentType = request.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-            return jsonResponse({ ok: false, message: "送信形式が正しくありません。" }, 400);
-        }
-
         const data = await request.json();
 
+        const recipientId = sanitizeKey(data.recipient_id || "person1", 30);
         const name = sanitizeText(data.name || "匿名", 30);
         const message = sanitizeText(data.message || "", 300);
 
@@ -18,9 +14,10 @@ export async function onRequestPost(context) {
         }
 
         await db.prepare(`
-            INSERT INTO messages (name, message, created_at)
-            VALUES (?, ?, ?)
+            INSERT INTO messages (recipient_id, name, message, created_at)
+            VALUES (?, ?, ?, ?)
         `).bind(
+            recipientId,
             name,
             message,
             new Date().toISOString()
@@ -34,11 +31,11 @@ export async function onRequestPost(context) {
 }
 
 function sanitizeText(value, maxLength) {
-    return String(value)
-        .replace(/[\u0000-\u001F\u007F]/g, "")
-        .replace(/[<>]/g, "")
-        .trim()
-        .slice(0, maxLength);
+    return String(value).replace(/[<>]/g, "").replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, maxLength);
+}
+
+function sanitizeKey(value, maxLength) {
+    return String(value).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, maxLength);
 }
 
 function jsonResponse(data, status = 200) {
