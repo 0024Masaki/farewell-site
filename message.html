@@ -11,17 +11,87 @@
 
 <div class="card">
 
-<h1>メッセージ投稿</h1>
+    <h1>メッセージ投稿</h1>
 
-<p class="subtitle">
-メッセージ投稿機能は準備中です
-</p>
+    <p class="subtitle">
+        一言メッセージをお寄せください
+    </p>
 
-<a class="button" href="index.html">
-トップへ戻る
-</a>
+    <form id="messageForm" class="form-area">
+
+        <label class="form-label" for="name">
+            お名前・ニックネーム 任意
+        </label>
+        <input
+            type="text"
+            id="name"
+            class="input"
+            maxlength="30"
+            placeholder="匿名でもOK"
+            autocomplete="off"
+        >
+
+        <label class="form-label" for="message">
+            メッセージ
+        </label>
+        <textarea
+            id="message"
+            class="textarea"
+            maxlength="300"
+            placeholder="お疲れ様でした！"
+            required
+        ></textarea>
+
+        <button type="submit" class="button button-submit">
+            投稿する
+        </button>
+
+    </form>
+
+    <p id="resultMessage" class="result-message"></p>
+
+    <a class="button button-secondary" href="index.html">
+        トップへ戻る
+    </a>
 
 </div>
+
+<script>
+const form = document.getElementById("messageForm");
+const resultMessage = document.getElementById("resultMessage");
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    resultMessage.textContent = "送信中です...";
+
+    const payload = {
+        name: document.getElementById("name").value,
+        message: document.getElementById("message").value
+    };
+
+    try {
+        const response = await fetch("/api/message", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        resultMessage.textContent = data.message;
+
+        if (data.ok) {
+            form.reset();
+        }
+
+    } catch (error) {
+        resultMessage.textContent = "通信に失敗しました。";
+    }
+});
+</script>
 
 </body>
 </html>

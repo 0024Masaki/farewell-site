@@ -60,3 +60,47 @@ h1{
 .button:hover{
     transform:translateY(-2px);
 }
+
+.form-area{
+    margin-top:25px;
+    text-align:left;
+}
+
+.form-label{
+    display:block;
+    margin:18px 0 8px;
+    font-weight:bold;
+    color:#333;
+}
+
+.input,
+.textarea{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    font-size:16px;
+    font-family:inherit;
+}
+
+.textarea{
+    min-height:150px;
+    resize:vertical;
+}
+
+.button-submit{
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+}
+
+.button-secondary{
+    background:#64748b;
+}
+
+.result-message{
+    margin-top:20px;
+    font-weight:bold;
+    color:#4f46e5;
+    text-align:center;
+}
