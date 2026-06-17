@@ -237,9 +237,12 @@ async function saveRecipient(method) {
 
     resultMessage.textContent = data.message || "処理が完了しました。";
 
-    if (data.ok) {
-        await loadRecipients();
+    await loadRecipients();
+
+    if (method === "POST") {
+        clearForm(false);
     }
+}
 
 function buildPayload() {
     return {
