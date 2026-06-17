@@ -32,7 +32,19 @@
         <label class="form-label" for="photo">
             写真
         </label>
-        <input type="file" id="photo" class="input" accept="image/jpeg,image/png,image/webp" required>
+
+        <p class="input-help-text">
+            複数枚まとめて選択できます。最大20枚まで投稿できます。
+        </p>
+
+        <input
+            type="file"
+            id="photo"
+            class="input"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            required
+        >
 
         <button type="submit" class="button button-submit">
             写真を投稿する
@@ -53,6 +65,9 @@ const form = document.getElementById("photoForm");
 const resultMessage = document.getElementById("resultMessage");
 const submitButton = form.querySelector("button[type='submit']");
 
+const photoInput = document.getElementById("photo");
+const maxUploadFiles = 20;
+
 const params = new URLSearchParams(window.location.search);
 const recipientId = params.get("id") || "";
 const backLink = document.getElementById("backLink");
@@ -66,70 +81,137 @@ if (recipientId) {
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const file = document.getElementById("photo").files[0];
+    if (!recipientId) {
+        showMessage(
+            "送別者が指定されていません。",
+            false
+        );
+        return;
+    }
 
-    if (!file) {
+    const files =
+        [...photoInput.files];
+
+    if (files.length === 0) {
         showMessage("写真を選択してください。", false);
         return;
     }
 
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-        showMessage("JPEG、PNG、WebP の写真を選択してください。", false);
+    if (files.length > maxUploadFiles) {
+        showMessage(
+            `一度に投稿できる写真は${maxUploadFiles}枚までです。`,
+            false
+        );
         return;
     }
 
+    const invalidFile =
+        files.find(file =>
+            !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+        );
+
+    if (invalidFile) {
+        showMessage(
+            "JPEG、PNG、WebP の写真を選択してください。",
+            false
+        );
+        return;
+    }
 
     setLoading(true);
-    showMessage("写真を送信中です。少しお待ちください...", true);
+
+    let successCount = 0;
+    const failedMessages = [];
 
     try {
-        const compressedFile =
-            await compressImage(file);
 
-        const base64 =
-            await fileToBase64(compressedFile);
+        for (let index = 0; index < files.length; index++) {
+            const file = files[index];
 
-        if (!recipientId) {
             showMessage(
-                "送別者が指定されていません。",
+                `${index + 1}/${files.length}枚目を送信中です...`,
+                true
+            );
+
+            try {
+                const compressedFile =
+                    await compressImage(file);
+
+                const base64 =
+                    await fileToBase64(compressedFile);
+
+                const payload = {
+                    recipient_id: recipientId,
+                    name: document.getElementById("name").value,
+                    comment: document.getElementById("comment").value,
+                    fileName: compressedFile.name,
+                    mimeType: compressedFile.type,
+                    base64: base64
+                };
+
+                const response = await fetch("/api/photo", {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                let data;
+
+                try {
+                    data = await response.json();
+                } catch (error) {
+                    data = {
+                        ok: false,
+                        message: "サーバー応答を確認できませんでした。"
+                    };
+                }
+
+                if (response.ok && data.ok) {
+                    successCount++;
+                } else {
+                    failedMessages.push(
+                        `${file.name}：${data.message || "投稿に失敗しました。"}`
+                    );
+                }
+
+                await sleep(250);
+
+            } catch (error) {
+                failedMessages.push(
+                    `${file.name}：投稿処理に失敗しました。`
+                );
+            }
+        }
+
+        if (successCount > 0 && failedMessages.length === 0) {
+            showMessage(
+                `✅ ${successCount}枚の写真を投稿しました。ありがとうございました！`,
+                true
+            );
+            form.reset();
+            return;
+        }
+
+        if (successCount > 0) {
+            showMessage(
+                `✅ ${successCount}枚投稿しました。一部失敗があります：${failedMessages.join(" / ")}`,
                 false
             );
             return;
         }
 
-        const payload = {
-            recipient_id: recipientId,
-            name: document.getElementById("name").value,
-            comment: document.getElementById("comment").value,
-            fileName: compressedFile.name,
-            mimeType: compressedFile.type,
-            base64: base64
-        };
-
-        const response = await fetch("/api/photo", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify(payload)
-        });
-
-        let data;
-        try {
-            data = await response.json();
-        } catch (error) {
-            data = { ok: false, message: "サーバー応答を確認できませんでした。" };
-        }
-
-        if (response.ok && data.ok) {
-            showMessage("✅ 写真を投稿しました。ありがとうございました！", true);
-            form.reset();
-        } else {
-            showMessage(data.message || "写真投稿に失敗しました。", false);
-        }
+        showMessage(
+            `写真投稿に失敗しました：${failedMessages.join(" / ")}`,
+            false
+        );
 
     } catch (error) {
-        showMessage("通信に失敗しました。時間をおいて再度お試しください。", false);
+        showMessage(
+            "通信に失敗しました。時間をおいて再度お試しください。",
+            false
+        );
     } finally {
         setLoading(false);
     }
@@ -144,6 +226,12 @@ function showMessage(message, isSuccess) {
     resultMessage.textContent = message;
     resultMessage.classList.toggle("success-message", isSuccess);
     resultMessage.classList.toggle("error-message", !isSuccess);
+}
+
+function sleep(milliseconds) {
+    return new Promise(resolve => {
+        setTimeout(resolve, milliseconds);
+    });
 }
 
 function fileToBase64(file) {

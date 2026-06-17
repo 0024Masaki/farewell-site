@@ -1063,3 +1063,10 @@ footer a:hover{
         display:block !important;
     }
 }
+
+.input-help-text{
+    margin-top:8px;
+    color:var(--text-muted);
+    font-size:13px;
+    line-height:1.6;
+}
