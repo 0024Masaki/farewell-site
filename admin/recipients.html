@@ -90,6 +90,7 @@ async function loadRecipients() {
     if (!data.ok) {
         adminPanel.hidden = true;
         adminListPanel.hidden = true;
+        adminKey.hidden = false;
         recipientList.innerHTML = "";
         resultMessage.textContent = data.message;
         return;
@@ -100,6 +101,7 @@ async function loadRecipients() {
     );
     adminPanel.hidden = false;
     adminListPanel.hidden = false;
+    adminKey.hidden = true;
 
     data.recipients.forEach(item => {
         const div = document.createElement("div");
