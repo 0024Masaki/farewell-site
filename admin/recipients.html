@@ -1,3 +1,4 @@
+<!-- recipients.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -66,6 +67,13 @@ document.getElementById("updateButton").addEventListener("click", () => saveReci
 document.getElementById("clearButton").addEventListener("click", clearForm);
 adminKey.addEventListener("change", loadRecipients);
 
+const savedKey = sessionStorage.getItem("adminKey");
+
+if (savedKey) {
+    adminKey.value = savedKey;
+    loadRecipients();
+}
+
 async function loadRecipients() {
     const key = adminKey.value.trim();
 
@@ -86,6 +94,10 @@ async function loadRecipients() {
         resultMessage.textContent = data.message;
         return;
     }
+    sessionStorage.setItem(
+        "adminKey",
+        key
+    );
     adminPanel.hidden = false;
     adminListPanel.hidden = false;
 

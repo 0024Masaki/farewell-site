@@ -33,6 +33,13 @@ const photoList = document.getElementById("photoList");
 
 adminKey.addEventListener("change", loadPhotos);
 
+const savedKey = sessionStorage.getItem("adminKey");
+
+if (savedKey) {
+    adminKey.value = savedKey;
+    loadPhotos();
+}
+
 async function loadPhotos() {
     const key = adminKey.value.trim();
 
@@ -53,6 +60,8 @@ async function loadPhotos() {
         resultMessage.textContent = data.message;
         return;
     }
+
+    sessionStorage.setItem("adminKey", key);
 
     if (data.photos.length === 0) {
         resultMessage.textContent = "写真はまだありません。";
@@ -124,11 +133,11 @@ function formatDate(value) {
     }
 
     return date.toLocaleString("ja-JP", {
-        year:"numeric",
-        month:"2-digit",
-        day:"2-digit",
-        hour:"2-digit",
-        minute:"2-digit"
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
     });
 }
 </script>
