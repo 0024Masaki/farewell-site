@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1">
+<title>写真ギャラリー</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="card wide-card">
+
+<h1>写真ギャラリー</h1>
+
+<p class="subtitle">
+皆様から投稿された写真です
+</p>
+
+<div id="galleryGrid"
+     class="gallery-grid">
+
+読み込み中...
+
+</div>
+
+<a id="backLink"
+   class="button button-secondary"
+   href="index.html">
+
+戻る
+
+</a>
+
+</div>
+
+<div id="viewer"
+     class="viewer hidden">
+
+<img id="viewerImage">
+
+</div>
+
+<script>
+
+const params =
+    new URLSearchParams(
+        location.search
+    );
+
+const recipientId =
+    params.get("id") || "";
+
+document
+.getElementById("backLink")
+.href =
+`person.html?id=${recipientId}`;
+
+loadPhotos();
+
+async function loadPhotos(){
+
+    const response =
+        await fetch(
+            `/api/photos?recipient_id=${recipientId}`
+        );
+
+    const data =
+        await response.json();
+
+    const grid =
+        document.getElementById(
+            "galleryGrid"
+        );
+
+    grid.innerHTML="";
+
+    if(
+        !data.ok ||
+        data.photos.length===0
+    ){
+
+        grid.innerHTML=
+        "<p>写真はまだありません</p>";
+
+        return;
+
+    }
+
+    data.photos.forEach(photo=>{
+
+        const imageUrl =
+        `https://drive.google.com/thumbnail?id=${photo.drive_file_id}&sz=w600`;
+
+        grid.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div
+              class="gallery-item">
+
+                <img
+                  src="${imageUrl}"
+                  data-full="${imageUrl}"
+                  alt="photo">
+
+            </div>
+            `
+        );
+
+    });
+
+    document
+    .querySelectorAll(
+        ".gallery-item img"
+    )
+    .forEach(img=>{
+
+        img.addEventListener(
+            "click",
+            ()=>{
+
+                document
+                .getElementById(
+                    "viewerImage"
+                )
+                .src=
+                img.dataset.full;
+
+                document
+                .getElementById(
+                    "viewer"
+                )
+                .classList.remove(
+                    "hidden"
+                );
+
+            }
+        );
+
+    });
+
+}
+
+document
+.getElementById(
+    "viewer"
+)
+.addEventListener(
+    "click",
+    ()=>{
+        document
+        .getElementById(
+            "viewer"
+        )
+        .classList.add(
+            "hidden"
+        );
+    }
+);
+
+</script>
+
+</body>
+</html>

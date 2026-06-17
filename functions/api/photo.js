@@ -4,14 +4,17 @@ export async function onRequest(context) {
     }
 
     try {
+        const db = context.env.DB;
         const scriptUrl = context.env.PHOTO_SCRIPT_URL;
         const uploadKey = context.env.PHOTO_UPLOAD_KEY;
 
-        if (!scriptUrl || !uploadKey) {
+        if (!db || !scriptUrl || !uploadKey) {
             return jsonResponse({ ok: false, message: "写真投稿設定が未設定です。" }, 500);
         }
 
         const data = await context.request.json();
+
+        const recipientId = sanitizeKey(data.recipient_id || "person1", 30);
 
         const payload = {
             key: uploadKey,
@@ -51,7 +54,35 @@ export async function onRequest(context) {
             }, 500);
         }
 
-        return jsonResponse(result, result.ok ? 200 : 500);
+        if (!result.ok || !result.file_id) {
+            return jsonResponse({
+                ok: false,
+                message: result.message || "Google Drive保存に失敗しました。"
+            }, 500);
+        }
+
+        await db.prepare(`
+            INSERT INTO photos (
+                recipient_id,
+                name,
+                comment,
+                drive_file_id,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?)
+        `).bind(
+            recipientId,
+            payload.name,
+            payload.comment,
+            result.file_id,
+            new Date().toISOString()
+        ).run();
+
+        return jsonResponse({
+            ok: true,
+            message: "写真を投稿しました。",
+            file_id: result.file_id
+        });
 
     } catch (error) {
         return jsonResponse({
@@ -66,6 +97,12 @@ function sanitizeText(value, maxLength) {
         .replace(/[<>]/g, "")
         .replace(/[\u0000-\u001F\u007F]/g, "")
         .trim()
+        .slice(0, maxLength);
+}
+
+function sanitizeKey(value, maxLength) {
+    return String(value)
+        .replace(/[^a-zA-Z0-9_-]/g, "")
         .slice(0, maxLength);
 }
 

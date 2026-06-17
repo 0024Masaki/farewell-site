@@ -79,7 +79,11 @@ form.addEventListener("submit", async (event) => {
     try {
         const base64 = await fileToBase64(file);
 
+        const params = new URLSearchParams(window.location.search);
+        const recipientId = params.get("id") || "person1";
+
         const payload = {
+            recipient_id: recipientId,
             name: document.getElementById("name").value,
             comment: document.getElementById("comment").value,
             fileName: file.name,
