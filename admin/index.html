@@ -2,51 +2,26 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>管理者ページ</title>
-
-<style>
-body{
-    font-family:sans-serif;
-    max-width:800px;
-    margin:30px auto;
-    padding:20px;
-}
-
-.menu{
-    display:flex;
-    flex-direction:column;
-    gap:15px;
-}
-
-.menu a{
-    display:block;
-    padding:15px;
-    text-decoration:none;
-    border:1px solid #ddd;
-    border-radius:8px;
-    text-align:center;
-}
-</style>
-
+<link rel="stylesheet" href="../style.css">
 </head>
+
 <body>
 
-<h1>管理者メニュー</h1>
+<div class="card wide-card">
 
-<div class="menu">
+    <h1>管理者メニュー</h1>
 
-    <a href="recipients.html">
-        送別者管理
-    </a>
+    <div class="person-menu">
+        <a class="button" href="recipients.html">
+            送別者管理
+        </a>
 
-    <a href="messages.html">
-        コメント削除
-    </a>
-
-    <a href="photos.html">
-        写真削除
-    </a>
+        <a class="button button-secondary" href="../index.html">
+            トップへ戻る
+        </a>
+    </div>
 
 </div>
 

@@ -15,7 +15,7 @@
 
 <input id="adminKey" class="input" type="password" placeholder="管理用パスキー">
 
-<div class="form-area">
+<div id="adminPanel" class="form-area" hidden>
     <label class="form-label">ID</label>
     <input id="recipientId" class="input" placeholder="例：001">
 
@@ -45,10 +45,12 @@
 
 <p id="resultMessage" class="result-message"></p>
 
-<h2>登録済み</h2>
-<div id="recipientList" class="message-list"></div>
+<div id="adminListPanel" hidden>
+    <h2>登録済み</h2>
+    <div id="recipientList" class="message-list"></div>
+</div>
 
-<a class="button button-secondary" href="../index.html">トップへ戻る</a>
+<a class="button button-secondary" href="index.html">管理者メニューへ戻る</a>
 
 </div>
 
@@ -56,6 +58,8 @@
 const adminKey = document.getElementById("adminKey");
 const resultMessage = document.getElementById("resultMessage");
 const recipientList = document.getElementById("recipientList");
+const adminPanel = document.getElementById("adminPanel");
+const adminListPanel = document.getElementById("adminListPanel");
 
 document.getElementById("createButton").addEventListener("click", () => saveRecipient("POST"));
 document.getElementById("updateButton").addEventListener("click", () => saveRecipient("PUT"));
@@ -76,9 +80,14 @@ async function loadRecipients() {
     recipientList.innerHTML = "";
 
     if (!data.ok) {
+        adminPanel.hidden = true;
+        adminListPanel.hidden = true;
+        recipientList.innerHTML = "";
         resultMessage.textContent = data.message;
         return;
     }
+    adminPanel.hidden = false;
+    adminListPanel.hidden = false;
 
     data.recipients.forEach(item => {
         const div = document.createElement("div");
