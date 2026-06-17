@@ -50,7 +50,13 @@
     <div class="viewer-content">
 
         <img id="viewerImage">
+        <button
+            id="closeViewer"
+            class="viewer-close">
 
+            ×
+
+        </button>
         <div
             id="viewerInfo"
             class="viewer-info">
@@ -214,6 +220,21 @@ nextButton.addEventListener("click", showNextPhoto);
 viewer.addEventListener("click", () => {
     viewer.classList.add("hidden");
 });
+
+document
+.getElementById("closeViewer")
+.addEventListener(
+    "click",
+    (event)=>{
+
+        event.stopPropagation();
+
+        viewer.classList.add(
+            "hidden"
+        );
+
+    }
+);
 
 document.querySelector(".viewer-content").addEventListener("click", (event) => {
     event.stopPropagation();
