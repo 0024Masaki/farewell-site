@@ -78,6 +78,28 @@ async function createRecipient(db, data) {
         }, 409);
     }
 
+    if (recipient.sort_order < 1) {
+        return json({
+            ok:false,
+            message:"表示順は1以上の番号を入力してください。"
+        }, 400);
+    }
+
+    const sortConflict =
+        await findSortOrderConflict(
+            db,
+            recipient.sort_order,
+            recipient.id,
+            recipient.is_active
+        );
+
+    if (sortConflict) {
+        return json({
+            ok:false,
+            message:`表示順 ${recipient.sort_order} は「${sortConflict.name}」で既に使用されています。`
+        }, 409);
+    }
+
     await db.prepare(`
         INSERT INTO recipients
             (id, name, title, photo_url, profile_html, sort_order, is_active, created_at)
@@ -115,6 +137,28 @@ async function updateRecipient(db, data) {
         return json({ ok:false, message:"更新対象の送別者が見つかりません。" }, 404);
     }
 
+    if (recipient.sort_order < 1) {
+        return json({
+            ok:false,
+            message:"表示順は1以上の番号を入力してください。"
+        }, 400);
+    }
+
+    const sortConflict =
+        await findSortOrderConflict(
+            db,
+            recipient.sort_order,
+            recipient.id,
+            recipient.is_active
+        );
+
+    if (sortConflict) {
+        return json({
+            ok:false,
+            message:`表示順 ${recipient.sort_order} は「${sortConflict.name}」で既に使用されています。`
+        }, 409);
+    }
+
     await db.prepare(`
         UPDATE recipients
         SET name = ?,
@@ -135,6 +179,24 @@ async function updateRecipient(db, data) {
     ).run();
 
     return json({ ok:true, message:"送別者を更新しました。" });
+}
+
+async function findSortOrderConflict(db, sortOrder, currentId, isActive) {
+    if (!isActive) {
+        return null;
+    }
+
+    return await db.prepare(`
+        SELECT id, name
+        FROM recipients
+        WHERE sort_order = ?
+          AND is_active = 1
+          AND id <> ?
+        LIMIT 1
+    `).bind(
+        sortOrder,
+        currentId
+    ).first();
 }
 
 async function hideRecipient(db, data) {
