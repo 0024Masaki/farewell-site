@@ -61,6 +61,11 @@ async function loadRecipients() {
 
         list.innerHTML = "";
 
+        if (data.recipients.length === 0) {
+            list.innerHTML = "<p>送別者はまだ登録されていません。</p>";
+            return;
+        }
+
         data.recipients.forEach(
             recipient => {
 
