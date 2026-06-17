@@ -88,11 +88,31 @@ async function loadRecipients() {
             <div class="message-name">${escapeHtml(item.name)} / ${escapeHtml(item.id)}</div>
             <div class="message-date">並び順：${item.sort_order} / 表示：${item.is_active ? "ON" : "OFF"}</div>
             <div class="message-text">${escapeHtml(item.title || "")}</div>
-            <button class="button button-secondary" type="button">編集</button>
-            <button class="button danger-button" type="button">非表示</button>
+
+            <div class="admin-button-row">
+                <button class="button button-secondary edit-button" type="button">編集</button>
+
+                <a class="button button-secondary"
+                href="../person.html?id=${encodeURIComponent(item.id)}"
+                target="_blank">
+                    紹介ページ確認
+                </a>
+
+                <a class="button button-secondary"
+                href="messages.html?id=${encodeURIComponent(item.id)}">
+                    コメント削除
+                </a>
+
+                <a class="button button-secondary"
+                href="photos.html?id=${encodeURIComponent(item.id)}">
+                    写真削除
+                </a>
+
+                <button class="button danger-button delete-button" type="button">非表示</button>
+            </div>
         `;
 
-        div.querySelectorAll("button")[0].addEventListener("click", () => {
+        div.querySelector(".edit-button").addEventListener("click", () => {
             document.getElementById("recipientId").value = item.id;
             document.getElementById("name").value = item.name;
             document.getElementById("title").value = item.title || "";
@@ -101,7 +121,7 @@ async function loadRecipients() {
             document.getElementById("isActive").checked = Boolean(item.is_active);
         });
 
-        div.querySelectorAll("button")[1].addEventListener("click", () => {
+        div.querySelector(".delete-button").addEventListener("click", () => {
             deleteRecipient(item.id);
         });
 
