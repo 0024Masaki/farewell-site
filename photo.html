@@ -53,6 +53,16 @@ const form = document.getElementById("photoForm");
 const resultMessage = document.getElementById("resultMessage");
 const submitButton = form.querySelector("button[type='submit']");
 
+const params = new URLSearchParams(window.location.search);
+const recipientId = params.get("id") || "";
+const backLink = document.getElementById("backLink");
+
+if (recipientId) {
+    backLink.href = `person.html?id=${encodeURIComponent(recipientId)}`;
+} else {
+    backLink.href = "index.html";
+}
+
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -78,13 +88,6 @@ form.addEventListener("submit", async (event) => {
 
         const base64 =
             await fileToBase64(compressedFile);
-
-        const params = new URLSearchParams(window.location.search);
-        const recipientId = params.get("id");
-
-        const backLink = document.getElementById("backLink");
-
-        backLink.href = `person.html?id=${encodeURIComponent(recipientId)}`;
 
         if (!recipientId) {
             showMessage(
