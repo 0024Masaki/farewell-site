@@ -11,7 +11,9 @@
 
 <div class="card wide-card">
 
-    <div class="hero-icon">🌸</div>
+    <div id="personAvatar" class="person-avatar" hidden>
+        <img id="personAvatarImage" alt="送別者の写真">
+    </div>
 
     <h1 id="recipientName">読み込み中...</h1>
 
@@ -57,6 +59,8 @@ const recipientId = params.get("id") || "";
 const recipientName = document.getElementById("recipientName");
 const recipientTitle = document.getElementById("recipientTitle");
 const profileBody = document.getElementById("profileBody");
+const personAvatar = document.getElementById("personAvatar");
+const personAvatarImage = document.getElementById("personAvatarImage");
 
 const messageLink = document.getElementById("messageLink");
 const photoLink = document.getElementById("photoLink");
@@ -98,6 +102,11 @@ async function loadRecipient() {
             recipient.profile_html || "<p>紹介文は準備中です。</p>"
         );
 
+        if (recipient.photo_url) {
+            personAvatarImage.src = recipient.photo_url;
+            personAvatar.hidden = false;
+        }
+
         messageLink.href = `message.html?id=${encodeURIComponent(recipient.id)}`;
         photoLink.href = `photo.html?id=${encodeURIComponent(recipient.id)}`;
         messageListLink.href = `messages.html?id=${encodeURIComponent(recipient.id)}`;
@@ -111,7 +120,13 @@ async function loadRecipient() {
 function showError(message) {
     recipientName.textContent = "表示できません";
     recipientTitle.textContent = "";
+    personAvatar.hidden = true;
+    personAvatarImage.removeAttribute("src");
     profileBody.textContent = message;
+}
+
+function isSafeImageUrl(url) {
+    return /^https:\/\/[^\s"'<>]+$/i.test(String(url || ""));
 }
 
 function sanitizeProfileHtml(html) {
