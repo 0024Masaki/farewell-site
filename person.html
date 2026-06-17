@@ -99,7 +99,10 @@ async function loadRecipient() {
         recipientTitle.textContent = recipient.title || "";
 
         profileBody.innerHTML = sanitizeProfileHtml(
-            recipient.profile_html || "<p>紹介文は準備中です。</p>"
+            (recipient.profile_html || "紹介文は準備中です。")
+                .replace(/\r\n/g, "\n")
+                .replace(/\r/g, "\n")
+                .replace(/\n/g, "<br>")
         );
 
         if (recipient.photo_url) {

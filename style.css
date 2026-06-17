@@ -141,8 +141,10 @@ h1{
 
 .message-text{
     margin-top:12px;
-    line-height:1.7;
+    line-height:1.8;
     white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
     color:#333;
 }
 
@@ -199,6 +201,8 @@ h1{
 .profile-body{
     line-height:1.9;
     color:#333;
+    white-space:normal;
+    word-break:break-word;
 }
 
 .profile-body p{
