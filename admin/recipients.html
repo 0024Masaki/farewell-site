@@ -130,6 +130,7 @@ async function loadRecipients() {
                 </a>
 
                 <button class="button danger-button delete-button" type="button">非表示</button>
+                <button class="button danger-button permanent-delete-button" type="button">完全削除</button>
             </div>
         `;
 
@@ -144,6 +145,10 @@ async function loadRecipients() {
 
         div.querySelector(".delete-button").addEventListener("click", () => {
             deleteRecipient(item.id);
+        });
+
+        div.querySelector(".permanent-delete-button").addEventListener("click", () => {
+            permanentDeleteRecipient(item.id);
         });
 
         recipientList.appendChild(div);
@@ -231,6 +236,45 @@ async function deleteRecipient(id) {
     resultMessage.textContent = data.message;
 
     if (data.ok) {
+        loadRecipients();
+    }
+}
+
+async function permanentDeleteRecipient(id, name) {
+    if (!adminKey.value.trim()) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
+
+    const firstConfirm =
+        confirm(`${name} を完全削除しますか？\nコメント・写真データも削除されます。`);
+
+    if (!firstConfirm) {
+        return;
+    }
+
+    const secondConfirm =
+        confirm("本当に完全削除しますか？この操作は元に戻せません。");
+
+    if (!secondConfirm) {
+        return;
+    }
+
+    const response = await fetch("/api/admin_recipients", {
+        method:"DELETE",
+        headers:{ "content-type":"application/json" },
+        body:JSON.stringify({
+            key: adminKey.value.trim(),
+            id,
+            action:"permanent_delete"
+        })
+    });
+
+    const data = await response.json();
+    resultMessage.textContent = data.message;
+
+    if (data.ok) {
+        clearForm(false);
         loadRecipients();
     }
 }

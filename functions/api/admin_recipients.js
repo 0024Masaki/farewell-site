@@ -41,6 +41,10 @@ export async function onRequest(context) {
         }
 
         if (method === "DELETE") {
+            if (data.action === "permanent_delete") {
+                return await permanentDeleteRecipient(db, data);
+            }
+
             return await hideRecipient(db, data);
         }
 
@@ -155,6 +159,42 @@ async function hideRecipient(db, data) {
     `).bind(id).run();
 
     return json({ ok:true, message:"送別者を非表示にしました。" });
+}
+
+async function permanentDeleteRecipient(db, data) {
+    const id = sanitizeKey(data.id || "", 30);
+
+    if (!id) {
+        return json({ ok:false, message:"IDがありません。" }, 400);
+    }
+
+    const existing = await db.prepare(`
+        SELECT id
+        FROM recipients
+        WHERE id = ?
+        LIMIT 1
+    `).bind(id).first();
+
+    if (!existing) {
+        return json({ ok:false, message:"完全削除対象の送別者が見つかりません。" }, 404);
+    }
+
+    await db.prepare(`
+        DELETE FROM messages
+        WHERE recipient_id = ?
+    `).bind(id).run();
+
+    await db.prepare(`
+        DELETE FROM photos
+        WHERE recipient_id = ?
+    `).bind(id).run();
+
+    await db.prepare(`
+        DELETE FROM recipients
+        WHERE id = ?
+    `).bind(id).run();
+
+    return json({ ok:true, message:"送別者を完全削除しました。" });
 }
 
 function buildRecipient(data) {
