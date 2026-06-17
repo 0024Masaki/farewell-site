@@ -61,16 +61,16 @@ async function loadRecipients() {
 
         list.innerHTML = "";
 
-        if (data.recipients.length === 0) {
-            list.innerHTML = "<p>送別者はまだ登録されていません。</p>";
-            return;
-        }
-
         data.recipients.forEach(
             recipient => {
 
                 const card = document.createElement("div");
                 card.className = "recipient-card";
+
+                const avatar = createRecipientAvatar(recipient);
+
+                const content = document.createElement("div");
+                content.className = "recipient-content";
 
                 const name = document.createElement("h2");
                 name.textContent = recipient.name || "";
@@ -83,8 +83,11 @@ async function loadRecipients() {
                 link.href = `person.html?id=${encodeURIComponent(recipient.id)}`;
                 link.textContent = "この方のページを見る";
 
-                card.appendChild(name);
-                card.appendChild(title);
+                content.appendChild(name);
+                content.appendChild(title);
+
+                card.appendChild(avatar);
+                card.appendChild(content);
                 card.appendChild(link);
                 list.appendChild(card);
 
@@ -97,6 +100,44 @@ async function loadRecipients() {
             "<p>通信エラーが発生しました。</p>";
 
     }
+
+}
+
+
+function createRecipientAvatar(recipient) {
+
+    const avatar =
+        document.createElement("div");
+
+    avatar.className =
+        "recipient-avatar";
+
+    const imageUrl =
+        recipient.photo_url ||
+        recipient.image_url ||
+        recipient.avatar_url ||
+        "";
+
+    if (imageUrl) {
+
+        const image =
+            document.createElement("img");
+
+        image.src = imageUrl;
+        image.alt = recipient.name || "送別者";
+
+        avatar.appendChild(image);
+        return avatar;
+
+    }
+
+    const name =
+        recipient.name || "送";
+
+    avatar.textContent =
+        name.trim().slice(0, 1) || "送";
+
+    return avatar;
 
 }
 
