@@ -58,10 +58,13 @@ async function loadPhotos() {
 
     if (!data.ok) {
         resultMessage.textContent = data.message;
+        adminKey.hidden = false;
         return;
     }
 
     sessionStorage.setItem("adminKey", key);
+
+    adminKey.hidden = true;
 
     if (data.photos.length === 0) {
         resultMessage.textContent = "写真はまだありません。";
