@@ -269,3 +269,111 @@ h1{
     display:none;
 
 }
+
+.gallery-card{
+
+    background:#fff;
+
+    border-radius:14px;
+
+    overflow:hidden;
+
+    border:1px solid #e5e7eb;
+
+}
+
+.gallery-info{
+
+    padding:10px;
+
+}
+
+.gallery-name{
+
+    font-weight:bold;
+
+    margin-bottom:6px;
+
+}
+
+.gallery-comment{
+
+    font-size:14px;
+
+    color:#555;
+
+    margin-bottom:6px;
+
+    white-space:pre-wrap;
+
+}
+
+.gallery-date{
+
+    font-size:12px;
+
+    color:#999;
+
+}
+
+.viewer-content{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    max-width:90vw;
+
+}
+
+.viewer-info{
+
+    margin-top:15px;
+
+    color:#fff;
+
+    text-align:center;
+
+}
+
+.viewer-name{
+
+    font-size:20px;
+
+    font-weight:bold;
+
+}
+
+.viewer-comment{
+
+    margin-top:8px;
+
+}
+
+.viewer-date{
+
+    margin-top:8px;
+
+    font-size:12px;
+
+    opacity:.8;
+
+}
+
+.viewer-nav{
+
+    background:none;
+
+    border:none;
+
+    color:#fff;
+
+    font-size:40px;
+
+    cursor:pointer;
+
+    padding:20px;
+
+}

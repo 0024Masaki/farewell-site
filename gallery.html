@@ -39,127 +39,207 @@
 <div id="viewer"
      class="viewer hidden">
 
-<img id="viewerImage">
+    <button
+        id="prevButton"
+        class="viewer-nav">
+
+        ◀
+
+    </button>
+
+    <div class="viewer-content">
+
+        <img id="viewerImage">
+
+        <div
+            id="viewerInfo"
+            class="viewer-info">
+
+        </div>
+
+    </div>
+
+    <button
+        id="nextButton"
+        class="viewer-nav">
+
+        ▶
+
+    </button>
 
 </div>
 
 <script>
+const params = new URLSearchParams(location.search);
+const recipientId = params.get("id") || "";
 
-const params =
-    new URLSearchParams(
-        location.search
-    );
+const backLink = document.getElementById("backLink");
+const viewer = document.getElementById("viewer");
+const viewerImage = document.getElementById("viewerImage");
+const viewerInfo = document.getElementById("viewerInfo");
+const prevButton = document.getElementById("prevButton");
+const nextButton = document.getElementById("nextButton");
 
-const recipientId =
-    params.get("id") || "";
+let currentIndex = 0;
+let photoList = [];
 
-document
-.getElementById("backLink")
-.href =
-`person.html?id=${recipientId}`;
+backLink.href = `person.html?id=${encodeURIComponent(recipientId)}`;
 
 loadPhotos();
 
-async function loadPhotos(){
+async function loadPhotos() {
+    const grid = document.getElementById("galleryGrid");
 
-    const response =
-        await fetch(
-            `/api/photos?recipient_id=${recipientId}`
+    try {
+        const response = await fetch(
+            `/api/photos?recipient_id=${encodeURIComponent(recipientId)}`
         );
 
-    const data =
-        await response.json();
+        const data = await response.json();
 
-    const grid =
-        document.getElementById(
-            "galleryGrid"
-        );
+        grid.innerHTML = "";
 
-    grid.innerHTML="";
+        if (!data.ok || data.photos.length === 0) {
+            grid.innerHTML = "<p>写真はまだありません</p>";
+            return;
+        }
 
-    if(
-        !data.ok ||
-        data.photos.length===0
-    ){
+        photoList = data.photos;
 
-        grid.innerHTML=
-        "<p>写真はまだありません</p>";
+        photoList.forEach((photo, index) => {
+            const imageUrl =
+                `https://drive.google.com/thumbnail?id=${encodeURIComponent(photo.drive_file_id)}&sz=w600`;
 
-        return;
+            grid.insertAdjacentHTML(
+                "beforeend",
+                `
+                <div class="gallery-card">
+                    <img
+                        src="${imageUrl}"
+                        alt="photo"
+                        data-index="${index}"
+                    >
 
+                    <div class="gallery-info">
+                        <div class="gallery-name">
+                            ${escapeHtml(photo.name || "匿名")}
+                        </div>
+
+                        <div class="gallery-comment">
+                            ${escapeHtml(photo.comment || "")}
+                        </div>
+
+                        <div class="gallery-date">
+                            ${formatDate(photo.created_at)}
+                        </div>
+                    </div>
+                </div>
+                `
+            );
+        });
+
+        document.querySelectorAll(".gallery-card img").forEach(img => {
+            img.addEventListener("click", () => {
+                openViewer(Number(img.dataset.index));
+            });
+        });
+
+    } catch (error) {
+        grid.innerHTML = "<p>写真の読み込みに失敗しました。</p>";
     }
-
-    data.photos.forEach(photo=>{
-
-        const imageUrl =
-        `https://drive.google.com/thumbnail?id=${photo.drive_file_id}&sz=w600`;
-
-        grid.insertAdjacentHTML(
-            "beforeend",
-            `
-            <div
-              class="gallery-item">
-
-                <img
-                  src="${imageUrl}"
-                  data-full="${imageUrl}"
-                  alt="photo">
-
-            </div>
-            `
-        );
-
-    });
-
-    document
-    .querySelectorAll(
-        ".gallery-item img"
-    )
-    .forEach(img=>{
-
-        img.addEventListener(
-            "click",
-            ()=>{
-
-                document
-                .getElementById(
-                    "viewerImage"
-                )
-                .src=
-                img.dataset.full;
-
-                document
-                .getElementById(
-                    "viewer"
-                )
-                .classList.remove(
-                    "hidden"
-                );
-
-            }
-        );
-
-    });
-
 }
 
-document
-.getElementById(
-    "viewer"
-)
-.addEventListener(
-    "click",
-    ()=>{
-        document
-        .getElementById(
-            "viewer"
-        )
-        .classList.add(
-            "hidden"
-        );
-    }
-);
+function openViewer(index) {
+    currentIndex = index;
 
+    const photo = photoList[currentIndex];
+
+    const imageUrl =
+        `https://drive.google.com/thumbnail?id=${encodeURIComponent(photo.drive_file_id)}&sz=w1600`;
+
+    viewerImage.src = imageUrl;
+
+    viewerInfo.innerHTML = `
+        <div class="viewer-name">
+            ${escapeHtml(photo.name || "匿名")}
+        </div>
+
+        <div class="viewer-comment">
+            ${escapeHtml(photo.comment || "")}
+        </div>
+
+        <div class="viewer-date">
+            ${formatDate(photo.created_at)}
+        </div>
+    `;
+
+    viewer.classList.remove("hidden");
+}
+
+function showPrevPhoto(event) {
+    event.stopPropagation();
+
+    if (photoList.length === 0) {
+        return;
+    }
+
+    currentIndex--;
+
+    if (currentIndex < 0) {
+        currentIndex = photoList.length - 1;
+    }
+
+    openViewer(currentIndex);
+}
+
+function showNextPhoto(event) {
+    event.stopPropagation();
+
+    if (photoList.length === 0) {
+        return;
+    }
+
+    currentIndex++;
+
+    if (currentIndex >= photoList.length) {
+        currentIndex = 0;
+    }
+
+    openViewer(currentIndex);
+}
+
+prevButton.addEventListener("click", showPrevPhoto);
+nextButton.addEventListener("click", showNextPhoto);
+
+viewer.addEventListener("click", () => {
+    viewer.classList.add("hidden");
+});
+
+document.querySelector(".viewer-content").addEventListener("click", (event) => {
+    event.stopPropagation();
+});
+
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatDate(value) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    return date.toLocaleString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
 </script>
 
 </body>
