@@ -280,6 +280,13 @@ pdfButton.addEventListener(
     }
 );
 
+window.addEventListener(
+    "afterprint",
+    () => {
+        printPhotoSection.hidden = true;
+    }
+);
+
 async function waitForPrintImages() {
 
     const images =

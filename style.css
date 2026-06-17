@@ -1051,3 +1051,15 @@ footer a:hover{
     font-size:14px;
     line-height:1.6;
 }
+
+@media screen{
+    #printPhotoSection{
+        display:none !important;
+    }
+}
+
+@media print{
+    #printPhotoSection{
+        display:block !important;
+    }
+}
