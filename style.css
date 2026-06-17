@@ -163,3 +163,48 @@ h1{
 .error-message{
     color:#dc2626;
 }
+
+.recipient-card{
+    margin-top:20px;
+    padding:20px;
+    border-radius:16px;
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+}
+
+.recipient-card h2{
+    margin-bottom:10px;
+    color:#111827;
+}
+
+.recipient-card p{
+    margin-bottom:15px;
+    color:#6b7280;
+}
+
+.profile-section{
+    margin-top:25px;
+    padding:24px;
+    border-radius:18px;
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    text-align:left;
+}
+
+.profile-section h2{
+    margin-bottom:16px;
+    text-align:center;
+}
+
+.profile-body{
+    line-height:1.9;
+    color:#333;
+}
+
+.profile-body p{
+    margin-bottom:12px;
+}
+
+.person-menu{
+    margin-top:25px;
+}

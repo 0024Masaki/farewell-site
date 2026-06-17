@@ -19,23 +19,87 @@
         皆様からの写真やメッセージをお待ちしております
     </p>
 
-    <a class="button" href="profile.html">
-        紹介ページを見る
-    </a>
+    <div id="recipientList"></div>
 
-    <a class="button" href="photo.html">
-        写真を投稿
-    </a>
-
-    <a class="button" href="message.html">
-        メッセージを投稿
-    </a>
-    </a>
-        <a class="button" href="admin/messages.html">
+    <a class="button" href="admin/messages.html">
         管理者ページへ
     </a>
 
 </div>
+
+<script>
+
+async function loadRecipients() {
+
+    const list =
+        document.getElementById(
+            "recipientList"
+        );
+
+    list.innerHTML =
+        "<p>読み込み中...</p>";
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/recipients"
+            );
+
+        const data =
+            await response.json();
+
+        if (!data.ok) {
+
+            list.innerHTML =
+                "<p>送別者情報を取得できませんでした。</p>";
+
+            return;
+        }
+
+        list.innerHTML = "";
+
+        data.recipients.forEach(
+            recipient => {
+
+                list.insertAdjacentHTML(
+                    "beforeend",
+                    `
+                    <div class="recipient-card">
+
+                        <h2>
+                            ${recipient.name}
+                        </h2>
+
+                        <p>
+                            ${recipient.title || ""}
+                        </p>
+
+                        <a
+                          class="button"
+                          href="person.html?id=${recipient.id}">
+                          この方のページを見る
+                        </a>
+
+                    </div>
+                    `
+                );
+
+            }
+        );
+
+    } catch (error) {
+
+        list.innerHTML =
+            "<p>通信エラーが発生しました。</p>";
+
+    }
+
+}
+
+loadRecipients();
+
+</script>
 
 </body>
 </html>

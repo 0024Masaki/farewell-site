@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>送別者ページ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="card wide-card">
+
+    <div class="hero-icon">🌸</div>
+
+    <h1 id="recipientName">読み込み中...</h1>
+
+    <p id="recipientTitle" class="subtitle"></p>
+
+    <section class="profile-section">
+        <h2>紹介文</h2>
+        <div id="profileBody" class="profile-body">
+            読み込み中...
+        </div>
+    </section>
+
+    <div class="person-menu">
+
+        <a id="messageLink" class="button" href="#">
+            メッセージを投稿
+        </a>
+
+        <a id="photoLink" class="button" href="#">
+            写真を投稿
+        </a>
+
+        <a id="messageListLink" class="button button-secondary" href="#">
+            メッセージを見る
+        </a>
+
+        <a id="galleryLink" class="button button-secondary" href="#">
+            写真を見る
+        </a>
+
+        <a class="button button-secondary" href="index.html">
+            トップへ戻る
+        </a>
+
+    </div>
+
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const recipientId = params.get("id") || "";
+
+const recipientName = document.getElementById("recipientName");
+const recipientTitle = document.getElementById("recipientTitle");
+const profileBody = document.getElementById("profileBody");
+
+const messageLink = document.getElementById("messageLink");
+const photoLink = document.getElementById("photoLink");
+const messageListLink = document.getElementById("messageListLink");
+const galleryLink = document.getElementById("galleryLink");
+
+if (!recipientId) {
+    recipientName.textContent = "送別者が指定されていません";
+    profileBody.textContent = "トップページから送別者を選択してください。";
+} else {
+    loadRecipient();
+}
+
+async function loadRecipient() {
+    try {
+        const response = await fetch("/api/recipients");
+        const data = await response.json();
+
+        if (!data.ok) {
+            showError("送別者情報を取得できませんでした。");
+            return;
+        }
+
+        const recipient = data.recipients.find(
+            item => item.id === recipientId
+        );
+
+        if (!recipient) {
+            showError("指定された送別者が見つかりません。");
+            return;
+        }
+
+        document.title = `${recipient.name} 送別記念ページ`;
+
+        recipientName.textContent = recipient.name;
+        recipientTitle.textContent = recipient.title || "";
+
+        profileBody.innerHTML = sanitizeProfileHtml(
+            recipient.profile_html || "<p>紹介文は準備中です。</p>"
+        );
+
+        messageLink.href = `message.html?id=${encodeURIComponent(recipient.id)}`;
+        photoLink.href = `photo.html?id=${encodeURIComponent(recipient.id)}`;
+        messageListLink.href = `messages.html?id=${encodeURIComponent(recipient.id)}`;
+        galleryLink.href = `gallery.html?id=${encodeURIComponent(recipient.id)}`;
+
+    } catch (error) {
+        showError("通信エラーが発生しました。");
+    }
+}
+
+function showError(message) {
+    recipientName.textContent = "表示できません";
+    recipientTitle.textContent = "";
+    profileBody.textContent = message;
+}
+
+function sanitizeProfileHtml(html) {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+
+    const allowedTags = [
+        "P",
+        "BR",
+        "STRONG",
+        "B",
+        "EM",
+        "I",
+        "UL",
+        "OL",
+        "LI",
+        "H2",
+        "H3"
+    ];
+
+    const elements = template.content.querySelectorAll("*");
+
+    elements.forEach(element => {
+        if (!allowedTags.includes(element.tagName)) {
+            element.replaceWith(
+                document.createTextNode(element.textContent)
+            );
+            return;
+        }
+
+        [...element.attributes].forEach(attribute => {
+            element.removeAttribute(attribute.name);
+        });
+    });
+
+    return template.innerHTML;
+}
+</script>
+
+</body>
+</html>
