@@ -357,7 +357,7 @@ h1{
     margin-top:14px;
     color:#fff;
     text-align:center;
-    width:100%;
+    width:min(700px,90vw);
 }
 
 .viewer-name{
@@ -366,13 +366,11 @@ h1{
 }
 
 .viewer-comment{
-
     margin-top:8px;
-
     white-space:pre-wrap;
-
     text-align:center;
-
+    word-break:break-word;
+    line-height:1.6;
 }
 
 .viewer-date{
@@ -461,4 +459,10 @@ h1{
 .viewer-date{
     width:100%;
     text-align:center;
+}
+
+.viewer-name{
+    font-size:24px;
+    font-weight:bold;
+    margin-top:12px;
 }
