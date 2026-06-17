@@ -7,6 +7,7 @@ export async function onRequestGet(context) {
                 id,
                 name,
                 title,
+                photo_url,
                 profile_html
             FROM recipients
             WHERE is_active = 1
