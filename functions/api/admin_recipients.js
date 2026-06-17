@@ -127,6 +127,7 @@ async function updateRecipient(db, data) {
     `).bind(
         recipient.name,
         recipient.title,
+        recipient.photo_url,
         recipient.profile_html,
         recipient.sort_order,
         recipient.is_active,

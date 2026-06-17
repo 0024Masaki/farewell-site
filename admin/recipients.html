@@ -226,16 +226,20 @@ async function saveRecipient(method) {
     });
 
     const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+        resultMessage.textContent =
+            data.detail
+                ? `${data.message} : ${data.detail}`
+                : (data.message || "処理に失敗しました。");
+        return;
+    }
+
     resultMessage.textContent = data.message || "処理が完了しました。";
 
     if (data.ok) {
         await loadRecipients();
-
-        if (method === "POST") {
-            clearForm(false);
-        }
     }
-}
 
 function buildPayload() {
     return {
