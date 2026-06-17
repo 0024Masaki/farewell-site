@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>送別者管理</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<div class="card wide-card">
+
+<h1>送別者管理</h1>
+
+<input id="adminKey" class="input" type="password" placeholder="管理用パスキー">
+
+<div class="form-area">
+    <label class="form-label">ID</label>
+    <input id="recipientId" class="input" placeholder="例：001">
+
+    <label class="form-label">名前</label>
+    <input id="name" class="input" placeholder="例：田中さん">
+
+    <label class="form-label">タイトル</label>
+    <input id="title" class="input" placeholder="例：ありがとうございました">
+
+    <label class="form-label">紹介文 HTML可</label>
+    <textarea id="profileHtml" class="textarea" placeholder="<p>紹介文を入力</p>"></textarea>
+
+    <label class="form-label">並び順</label>
+    <input id="sortOrder" class="input" type="number" value="1">
+
+    <label class="form-label">
+        <input id="isActive" type="checkbox" checked>
+        表示する
+    </label>
+
+    <button id="saveButton" class="button button-submit">追加・更新</button>
+</div>
+
+<p id="resultMessage" class="result-message"></p>
+
+<h2>登録済み</h2>
+<div id="recipientList" class="message-list"></div>
+
+<a class="button button-secondary" href="../index.html">トップへ戻る</a>
+
+</div>
+
+<script>
+const adminKey = document.getElementById("adminKey");
+const resultMessage = document.getElementById("resultMessage");
+const recipientList = document.getElementById("recipientList");
+
+document.getElementById("saveButton").addEventListener("click", saveRecipient);
+adminKey.addEventListener("change", loadRecipients);
+
+async function loadRecipients() {
+    const key = adminKey.value.trim();
+
+    if (!key) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
+
+    const response = await fetch(`/api/admin_recipients?key=${encodeURIComponent(key)}`);
+    const data = await response.json();
+
+    recipientList.innerHTML = "";
+
+    if (!data.ok) {
+        resultMessage.textContent = data.message;
+        return;
+    }
+
+    data.recipients.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "message-card";
+
+        div.innerHTML = `
+            <div class="message-name">${escapeHtml(item.name)} / ${escapeHtml(item.id)}</div>
+            <div class="message-date">並び順：${item.sort_order} / 表示：${item.is_active ? "ON" : "OFF"}</div>
+            <div class="message-text">${escapeHtml(item.title || "")}</div>
+            <button class="button button-secondary" type="button">編集</button>
+            <button class="button danger-button" type="button">非表示</button>
+        `;
+
+        div.querySelectorAll("button")[0].addEventListener("click", () => {
+            document.getElementById("recipientId").value = item.id;
+            document.getElementById("name").value = item.name;
+            document.getElementById("title").value = item.title || "";
+            document.getElementById("profileHtml").value = item.profile_html || "";
+            document.getElementById("sortOrder").value = item.sort_order || 0;
+            document.getElementById("isActive").checked = Boolean(item.is_active);
+        });
+
+        div.querySelectorAll("button")[1].addEventListener("click", () => {
+            deleteRecipient(item.id);
+        });
+
+        recipientList.appendChild(div);
+    });
+
+    resultMessage.textContent = `${data.recipients.length}件あります。`;
+}
+
+async function saveRecipient() {
+    const key = adminKey.value.trim();
+
+    const payload = {
+        key,
+        id: document.getElementById("recipientId").value,
+        name: document.getElementById("name").value,
+        title: document.getElementById("title").value,
+        profile_html: document.getElementById("profileHtml").value,
+        sort_order: document.getElementById("sortOrder").value,
+        is_active: document.getElementById("isActive").checked
+    };
+
+    const method = await existsRecipient(payload.id) ? "PUT" : "POST";
+
+    const response = await fetch("/api/admin_recipients", {
+        method,
+        headers:{ "content-type":"application/json" },
+        body:JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    resultMessage.textContent = data.message;
+
+    if (data.ok) {
+        loadRecipients();
+    }
+}
+
+async function deleteRecipient(id) {
+    if (!confirm("この送別者を非表示にしますか？")) {
+        return;
+    }
+
+    const response = await fetch("/api/admin_recipients", {
+        method:"DELETE",
+        headers:{ "content-type":"application/json" },
+        body:JSON.stringify({
+            key: adminKey.value.trim(),
+            id
+        })
+    });
+
+    const data = await response.json();
+    resultMessage.textContent = data.message;
+
+    if (data.ok) {
+        loadRecipients();
+    }
+}
+
+async function existsRecipient(id) {
+    const key = adminKey.value.trim();
+    const response = await fetch(`/api/admin_recipients?key=${encodeURIComponent(key)}`);
+    const data = await response.json();
+
+    return data.ok && data.recipients.some(item => item.id === id);
+}
+
+function escapeHtml(value) {
+    const div = document.createElement("div");
+    div.textContent = value;
+    return div.innerHTML;
+}
+</script>
+
+</body>
+</html>

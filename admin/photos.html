@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>管理者用メッセージ一覧</title>
+<title>管理者用写真一覧</title>
 <link rel="stylesheet" href="../style.css">
 </head>
 
@@ -11,13 +11,13 @@
 
 <div class="card wide-card">
 
-<h1>管理者用メッセージ一覧</h1>
+<h1>管理者用写真一覧</h1>
 
 <input id="adminKey" class="input" type="password" placeholder="管理用パスキー">
 
 <p id="resultMessage" class="result-message"></p>
 
-<div id="messageList" class="message-list"></div>
+<div id="photoList" class="gallery-grid"></div>
 
 <a class="button button-secondary" href="../index.html">トップへ戻る</a>
 
@@ -29,11 +29,11 @@ const recipientId = params.get("id") || "person1";
 
 const adminKey = document.getElementById("adminKey");
 const resultMessage = document.getElementById("resultMessage");
-const messageList = document.getElementById("messageList");
+const photoList = document.getElementById("photoList");
 
-adminKey.addEventListener("change", loadMessages);
+adminKey.addEventListener("change", loadPhotos);
 
-async function loadMessages() {
+async function loadPhotos() {
     const key = adminKey.value.trim();
 
     if (!key) {
@@ -42,55 +42,63 @@ async function loadMessages() {
     }
 
     const response = await fetch(
-        `/api/messages?key=${encodeURIComponent(key)}&recipient_id=${encodeURIComponent(recipientId)}`
+        `/api/admin_photos?key=${encodeURIComponent(key)}&recipient_id=${encodeURIComponent(recipientId)}`
     );
 
     const data = await response.json();
 
-    messageList.innerHTML = "";
+    photoList.innerHTML = "";
 
     if (!data.ok) {
         resultMessage.textContent = data.message;
         return;
     }
 
-    if (data.messages.length === 0) {
-        resultMessage.textContent = "投稿はまだありません。";
+    if (data.photos.length === 0) {
+        resultMessage.textContent = "写真はまだありません。";
         return;
     }
 
-    resultMessage.textContent = `${data.messages.length}件あります。`;
+    resultMessage.textContent = `${data.photos.length}枚あります。`;
 
-    data.messages.forEach(item => {
+    data.photos.forEach(photo => {
+        const imageUrl =
+            `https://drive.google.com/thumbnail?id=${encodeURIComponent(photo.drive_file_id)}&sz=w600`;
+
         const card = document.createElement("div");
-        card.className = "message-card";
+        card.className = "gallery-card";
 
         card.innerHTML = `
-            <div class="message-name">${escapeHtml(item.name || "匿名")}</div>
-            <div class="message-date">${formatDate(item.created_at)}</div>
-            <div class="message-text">${escapeHtml(item.message || "")}</div>
-            <button class="button danger-button" type="button">削除</button>
+            <img src="${imageUrl}" alt="photo">
+
+            <div class="gallery-info">
+                <div class="gallery-name">${escapeHtml(photo.name || "匿名")}</div>
+                <div class="gallery-comment">${escapeHtml(photo.comment || "")}</div>
+                <div class="gallery-date">${formatDate(photo.created_at)}</div>
+                <button class="button danger-button" type="button">削除</button>
+            </div>
         `;
 
         card.querySelector("button").addEventListener("click", () => {
-            deleteMessage(item.id);
+            deletePhoto(photo.id, photo.drive_file_id);
         });
 
-        messageList.appendChild(card);
+        photoList.appendChild(card);
     });
 }
 
-async function deleteMessage(id) {
-    if (!confirm("このメッセージを削除しますか？")) {
+async function deletePhoto(id, driveFileId) {
+    if (!confirm("この写真を削除しますか？")) {
         return;
     }
 
-    const response = await fetch("/api/admin_message_delete", {
+    const response = await fetch("/api/admin_photo_delete", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
             key: adminKey.value.trim(),
-            id
+            id,
+            drive_file_id: driveFileId
         })
     });
 
@@ -98,7 +106,7 @@ async function deleteMessage(id) {
     resultMessage.textContent = data.message;
 
     if (data.ok) {
-        loadMessages();
+        loadPhotos();
     }
 }
 

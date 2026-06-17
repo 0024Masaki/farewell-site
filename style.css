@@ -509,3 +509,7 @@ h1{
         font-size:24px;
     }
 }
+
+.danger-button{
+    background:#dc2626;
+}
