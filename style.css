@@ -1044,3 +1044,10 @@ footer a:hover{
         margin:12mm;
     }
 }
+
+.pdf-help-text{
+    margin-top:10px;
+    color:var(--text-muted);
+    font-size:14px;
+    line-height:1.6;
+}
