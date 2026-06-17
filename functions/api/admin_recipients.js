@@ -14,7 +14,7 @@ export async function onRequest(context) {
             }
 
             const result = await db.prepare(`
-                SELECT id, name, title, profile_html, sort_order, is_active
+                SELECT id, name, title, photo_url, profile_html, sort_order, is_active
                 FROM recipients
                 ORDER BY sort_order ASC, id ASC
             `).all();
@@ -80,13 +80,14 @@ async function createRecipient(db, data) {
 
     await db.prepare(`
         INSERT INTO recipients
-            (id, name, title, profile_html, sort_order, is_active, created_at)
+            (id, name, title, photo_url, profile_html, sort_order, is_active, created_at)
         VALUES
-            (?, ?, ?, ?, ?, ?, ?)
+            (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
         recipient.id,
         recipient.name,
         recipient.title,
+        recipient.photo_url,
         recipient.profile_html,
         recipient.sort_order,
         recipient.is_active,
@@ -118,6 +119,7 @@ async function updateRecipient(db, data) {
         UPDATE recipients
         SET name = ?,
             title = ?,
+            photo_url = ?,
             profile_html = ?,
             sort_order = ?,
             is_active = ?
@@ -202,6 +204,7 @@ function buildRecipient(data) {
         id: sanitizeKey(data.id || "", 30),
         name: sanitizeText(data.name || "", 80),
         title: sanitizeText(data.title || "", 120),
+        photo_url: sanitizeText(data.photo_url || "", 500),
         profile_html: sanitizeProfile(data.profile_html || "", 4000),
         sort_order: normalizeNumber(data.sort_order, 0),
         is_active: data.is_active ? 1 : 0

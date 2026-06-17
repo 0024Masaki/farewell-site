@@ -26,6 +26,9 @@
     <label class="form-label">タイトル</label>
     <input id="title" class="input" placeholder="例：ありがとうございました">
 
+    <label class="form-label">顔写真URL</label>
+    <input id="photoUrl" class="input" placeholder="Google Drive画像URLなど">
+
     <label class="form-label">紹介文</label>
     <textarea id="profileHtml" class="textarea" placeholder="紹介文を入力"></textarea>
 
@@ -143,6 +146,7 @@ async function loadRecipients() {
             document.getElementById("recipientId").value = item.id;
             document.getElementById("name").value = item.name;
             document.getElementById("title").value = item.title || "";
+            document.getElementById("photoUrl").value = item.photo_url || "";
             document.getElementById("profileHtml").value = item.profile_html || "";
             document.getElementById("sortOrder").value = item.sort_order || 0;
             document.getElementById("isActive").checked = Boolean(item.is_active);
@@ -214,6 +218,7 @@ function buildPayload() {
         id: document.getElementById("recipientId").value.trim(),
         name: document.getElementById("name").value.trim(),
         title: document.getElementById("title").value.trim(),
+        photo_url: document.getElementById("photoUrl").value.trim(),
         profile_html: document.getElementById("profileHtml").value.trim(),
         sort_order: document.getElementById("sortOrder").value,
         is_active: document.getElementById("isActive").checked

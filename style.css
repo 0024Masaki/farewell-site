@@ -822,3 +822,10 @@ footer a:hover{
         gap:8px;
     }
 }
+
+.recipient-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center;
+}
