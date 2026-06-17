@@ -36,7 +36,11 @@
         表示する
     </label>
 
-    <button id="saveButton" class="button button-submit">追加・更新</button>
+    <div class="admin-button-row">
+        <button id="createButton" class="button button-submit" type="button">新規追加</button>
+        <button id="updateButton" class="button button-secondary" type="button">更新</button>
+        <button id="clearButton" class="button button-secondary" type="button">入力クリア</button>
+    </div>
 </div>
 
 <p id="resultMessage" class="result-message"></p>
@@ -53,7 +57,9 @@ const adminKey = document.getElementById("adminKey");
 const resultMessage = document.getElementById("resultMessage");
 const recipientList = document.getElementById("recipientList");
 
-document.getElementById("saveButton").addEventListener("click", saveRecipient);
+document.getElementById("createButton").addEventListener("click", () => saveRecipient("POST"));
+document.getElementById("updateButton").addEventListener("click", () => saveRecipient("PUT"));
+document.getElementById("clearButton").addEventListener("click", clearForm);
 adminKey.addEventListener("change", loadRecipients);
 
 async function loadRecipients() {
@@ -105,20 +111,18 @@ async function loadRecipients() {
     resultMessage.textContent = `${data.recipients.length}件あります。`;
 }
 
-async function saveRecipient() {
-    const key = adminKey.value.trim();
+async function saveRecipient(method) {
+    const payload = buildPayload();
 
-    const payload = {
-        key,
-        id: document.getElementById("recipientId").value,
-        name: document.getElementById("name").value,
-        title: document.getElementById("title").value,
-        profile_html: document.getElementById("profileHtml").value,
-        sort_order: document.getElementById("sortOrder").value,
-        is_active: document.getElementById("isActive").checked
-    };
+    if (!payload.key) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
 
-    const method = await existsRecipient(payload.id) ? "PUT" : "POST";
+    if (!payload.id || !payload.name) {
+        resultMessage.textContent = "IDと名前は必須です。";
+        return;
+    }
 
     const response = await fetch("/api/admin_recipients", {
         method,
@@ -127,14 +131,48 @@ async function saveRecipient() {
     });
 
     const data = await response.json();
-    resultMessage.textContent = data.message;
+    resultMessage.textContent = data.message || "処理が完了しました。";
 
     if (data.ok) {
-        loadRecipients();
+        await loadRecipients();
+
+        if (method === "POST") {
+            clearForm(false);
+        }
+    }
+}
+
+function buildPayload() {
+    return {
+        key: adminKey.value.trim(),
+        id: document.getElementById("recipientId").value.trim(),
+        name: document.getElementById("name").value.trim(),
+        title: document.getElementById("title").value.trim(),
+        profile_html: document.getElementById("profileHtml").value.trim(),
+        sort_order: document.getElementById("sortOrder").value,
+        is_active: document.getElementById("isActive").checked
+    };
+}
+
+function clearForm(showMessage = true) {
+    document.getElementById("recipientId").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("title").value = "";
+    document.getElementById("profileHtml").value = "";
+    document.getElementById("sortOrder").value = "1";
+    document.getElementById("isActive").checked = true;
+
+    if (showMessage) {
+        resultMessage.textContent = "入力欄をクリアしました。";
     }
 }
 
 async function deleteRecipient(id) {
+    if (!adminKey.value.trim()) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
+
     if (!confirm("この送別者を非表示にしますか？")) {
         return;
     }
@@ -154,14 +192,6 @@ async function deleteRecipient(id) {
     if (data.ok) {
         loadRecipients();
     }
-}
-
-async function existsRecipient(id) {
-    const key = adminKey.value.trim();
-    const response = await fetch(`/api/admin_recipients?key=${encodeURIComponent(key)}`);
-    const data = await response.json();
-
-    return data.ok && data.recipients.some(item => item.id === id);
 }
 
 function escapeHtml(value) {

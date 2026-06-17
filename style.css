@@ -513,3 +513,14 @@ h1{
 .danger-button{
     background:#dc2626;
 }
+.admin-button-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-top:18px;
+}
+
+.admin-button-row .button{
+    margin:0;
+}

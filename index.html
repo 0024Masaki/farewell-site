@@ -62,28 +62,24 @@ async function loadRecipients() {
         data.recipients.forEach(
             recipient => {
 
-                list.insertAdjacentHTML(
-                    "beforeend",
-                    `
-                    <div class="recipient-card">
+                const card = document.createElement("div");
+                card.className = "recipient-card";
 
-                        <h2>
-                            ${recipient.name}
-                        </h2>
+                const name = document.createElement("h2");
+                name.textContent = recipient.name || "";
 
-                        <p>
-                            ${recipient.title || ""}
-                        </p>
+                const title = document.createElement("p");
+                title.textContent = recipient.title || "";
 
-                        <a
-                          class="button"
-                          href="person.html?id=${recipient.id}">
-                          この方のページを見る
-                        </a>
+                const link = document.createElement("a");
+                link.className = "button";
+                link.href = `person.html?id=${encodeURIComponent(recipient.id)}`;
+                link.textContent = "この方のページを見る";
 
-                    </div>
-                    `
-                );
+                card.appendChild(name);
+                card.appendChild(title);
+                card.appendChild(link);
+                list.appendChild(card);
 
             }
         );
