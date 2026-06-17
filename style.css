@@ -1125,3 +1125,36 @@ footer a:hover{
     word-break:break-word;
     overflow-wrap:anywhere;
 }
+
+.qr-section{
+    margin-top:24px;
+    padding:18px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    text-align:center;
+}
+
+.qr-title{
+    margin-bottom:12px;
+    color:var(--text);
+    font-weight:bold;
+    font-size:16px;
+}
+
+.site-qr{
+    width:180px;
+    height:180px;
+    padding:10px;
+    border-radius:16px;
+    background:#fff;
+    display:block;
+    margin:0 auto;
+}
+
+.qr-note{
+    margin-top:12px;
+    color:var(--text-muted);
+    font-size:13px;
+    line-height:1.6;
+}
