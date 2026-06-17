@@ -829,3 +829,30 @@ footer a:hover{
     object-fit:contain;
     object-position:center;
 }
+
+.recipient-photo-admin{
+    display:grid;
+    gap:12px;
+}
+
+.recipient-photo-preview{
+    width:140px;
+    height:140px;
+    margin:0 auto;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    color:#94a3b8;
+    font-size:14px;
+}
+
+.recipient-photo-preview img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center;
+}

@@ -26,8 +26,27 @@
     <label class="form-label">タイトル</label>
     <input id="title" class="input" placeholder="例：ありがとうございました">
 
-    <label class="form-label">顔写真URL</label>
-    <input id="photoUrl" class="input" placeholder="Google Drive画像URLなど">
+    <label class="form-label">顔写真</label>
+
+    <div class="recipient-photo-admin">
+        <div class="recipient-photo-preview">
+            <img id="photoPreview" alt="顔写真プレビュー" hidden>
+            <span id="photoPreviewText">未設定</span>
+        </div>
+
+        <input id="photoUrl" type="hidden">
+
+        <input
+            id="photoFile"
+            class="input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+        >
+
+        <button id="uploadPhotoButton" class="button button-secondary" type="button">
+            顔写真をアップロード
+        </button>
+    </div>
 
     <label class="form-label">紹介文</label>
     <textarea id="profileHtml" class="textarea" placeholder="紹介文を入力"></textarea>
@@ -66,10 +85,15 @@ const resultMessage = document.getElementById("resultMessage");
 const recipientList = document.getElementById("recipientList");
 const adminPanel = document.getElementById("adminPanel");
 const adminListPanel = document.getElementById("adminListPanel");
+const photoUrl = document.getElementById("photoUrl");
+const photoFile = document.getElementById("photoFile");
+const photoPreview = document.getElementById("photoPreview");
+const photoPreviewText = document.getElementById("photoPreviewText");
 
 document.getElementById("createButton").addEventListener("click", () => saveRecipient("POST"));
 document.getElementById("updateButton").addEventListener("click", () => saveRecipient("PUT"));
 document.getElementById("clearButton").addEventListener("click", clearForm);
+document.getElementById("uploadPhotoButton").addEventListener("click", uploadRecipientPhoto);
 adminKey.addEventListener("change", loadRecipients);
 
 const savedKey = sessionStorage.getItem("adminKey");
@@ -146,7 +170,8 @@ async function loadRecipients() {
             document.getElementById("recipientId").value = item.id;
             document.getElementById("name").value = item.name;
             document.getElementById("title").value = item.title || "";
-            document.getElementById("photoUrl").value = item.photo_url || "";
+            photoUrl.value = item.photo_url || "";
+            updatePhotoPreview(photoUrl.value);
             document.getElementById("profileHtml").value = item.profile_html || "";
             document.getElementById("sortOrder").value = item.sort_order || 0;
             document.getElementById("isActive").checked = Boolean(item.is_active);
@@ -229,6 +254,10 @@ function clearForm(showMessage = true) {
     document.getElementById("recipientId").value = "";
     document.getElementById("name").value = "";
     document.getElementById("title").value = "";
+    photoUrl.value = "";
+    photoFile.value = "";
+    updatePhotoPreview("");
+    document.getElementById("photoUrl").value = "";
     document.getElementById("profileHtml").value = "";
     document.getElementById("sortOrder").value = "1";
     document.getElementById("isActive").checked = true;
@@ -304,6 +333,135 @@ async function permanentDeleteRecipient(id, name) {
         clearForm(false);
         loadRecipients();
     }
+}
+
+async function uploadRecipientPhoto() {
+    const file = photoFile.files[0];
+
+    if (!adminKey.value.trim()) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
+
+    if (!file) {
+        resultMessage.textContent = "顔写真を選択してください。";
+        return;
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        resultMessage.textContent = "JPEG、PNG、WebP の画像を選択してください。";
+        return;
+    }
+
+    resultMessage.textContent = "顔写真をアップロード中です...";
+
+    try {
+        const compressedFile = await compressImage(file);
+        const base64 = await fileToBase64(compressedFile);
+
+        const response = await fetch("/api/admin_recipient_photo", {
+            method:"POST",
+            headers:{
+                "content-type":"application/json"
+            },
+            body:JSON.stringify({
+                key:adminKey.value.trim(),
+                fileName:compressedFile.name,
+                mimeType:compressedFile.type,
+                base64:base64
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            resultMessage.textContent = data.message || "顔写真アップロードに失敗しました。";
+            return;
+        }
+
+        photoUrl.value = data.photo_url;
+        updatePhotoPreview(data.photo_url);
+        resultMessage.textContent = "顔写真を設定しました。更新または新規追加を押してください。";
+
+    } catch (error) {
+        resultMessage.textContent = "顔写真アップロードに失敗しました。";
+    }
+}
+
+function updatePhotoPreview(url) {
+    if (!url) {
+        photoPreview.hidden = true;
+        photoPreview.removeAttribute("src");
+        photoPreviewText.hidden = false;
+        return;
+    }
+
+    photoPreview.src = url;
+    photoPreview.hidden = false;
+    photoPreviewText.hidden = true;
+}
+
+async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        const reader = new FileReader();
+
+        reader.onload = event => {
+            image.onload = () => {
+                let width = image.width;
+                let height = image.height;
+                const maxSize = 600;
+
+                if (width > height && width > maxSize) {
+                    height = Math.round(height * maxSize / width);
+                    width = maxSize;
+                }
+
+                if (height >= width && height > maxSize) {
+                    width = Math.round(width * maxSize / height);
+                    height = maxSize;
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(image, 0, 0, width, height);
+
+                canvas.toBlob(blob => {
+                    if (!blob) {
+                        reject(new Error("圧縮失敗"));
+                        return;
+                    }
+
+                    resolve(new File([blob], file.name, {
+                        type:"image/jpeg"
+                    }));
+                }, "image/jpeg", 0.88);
+            };
+
+            image.onerror = reject;
+            image.src = event.target.result;
+        };
+
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const result = String(reader.result);
+            resolve(result.split(",")[1] || "");
+        };
+
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
 }
 
 function escapeHtml(value) {
