@@ -26,7 +26,31 @@
         </div>
     </section>
 
+    <section
+        id="printPhotoSection"
+        class="profile-section"
+        hidden>
+
+        <h2>投稿写真</h2>
+
+        <div
+            id="printPhotoGrid"
+            class="print-photo-grid">
+
+        </div>
+
+    </section>
+
     <div class="person-menu">
+
+        <button
+            id="pdfButton"
+            class="button button-submit"
+            type="button">
+
+            PDFで出力
+
+        </button>
 
         <a id="messageLink" class="button" href="#">
             メッセージを投稿
@@ -66,6 +90,14 @@ const messageLink = document.getElementById("messageLink");
 const photoLink = document.getElementById("photoLink");
 const messageListLink = document.getElementById("messageListLink");
 const galleryLink = document.getElementById("galleryLink");
+const pdfButton =
+    document.getElementById("pdfButton");
+
+const printPhotoSection =
+    document.getElementById("printPhotoSection");
+
+const printPhotoGrid =
+    document.getElementById("printPhotoGrid");
 
 if (!recipientId) {
     recipientName.textContent = "送別者が指定されていません";
@@ -105,9 +137,12 @@ async function loadRecipient() {
                 .replace(/\n/g, "<br>")
         );
 
-        if (recipient.photo_url) {
+        if (isSafeImageUrl(recipient.photo_url)) {
             personAvatarImage.src = recipient.photo_url;
             personAvatar.hidden = false;
+        } else {
+            personAvatar.hidden = true;
+            personAvatarImage.removeAttribute("src");
         }
 
         messageLink.href = `message.html?id=${encodeURIComponent(recipient.id)}`;
@@ -130,6 +165,144 @@ function showError(message) {
 
 function isSafeImageUrl(url) {
     return /^https:\/\/[^\s"'<>]+$/i.test(String(url || ""));
+}
+
+async function loadPrintPhotos() {
+
+    if (printPhotoGrid.dataset.loaded === "1") {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/photos?recipient_id=${encodeURIComponent(recipientId)}`
+            );
+
+        const data =
+            await response.json();
+
+        printPhotoGrid.innerHTML = "";
+
+        if (
+            !data.ok ||
+            !data.photos ||
+            data.photos.length === 0
+        ) {
+            printPhotoSection.hidden = true;
+            printPhotoGrid.dataset.loaded = "1";
+            return;
+        }
+
+        data.photos.forEach(photo => {
+
+            if (!photo.drive_file_id) {
+                return;
+            }
+
+            const imageUrl =
+                `https://drive.google.com/thumbnail?id=${encodeURIComponent(photo.drive_file_id)}&sz=w1200`;
+
+            const card =
+                document.createElement("div");
+
+            card.className =
+                "print-photo-card";
+
+            const image =
+                document.createElement("img");
+
+            image.src =
+                imageUrl;
+
+            image.alt =
+                "投稿写真";
+
+            image.loading =
+                "eager";
+
+            const name =
+                document.createElement("div");
+
+            name.className =
+                "print-photo-name";
+
+            name.textContent =
+                photo.name || "匿名";
+
+            const comment =
+                document.createElement("div");
+
+            comment.className =
+                "print-photo-comment";
+
+            comment.textContent =
+                photo.comment || "";
+
+            card.appendChild(image);
+            card.appendChild(name);
+            card.appendChild(comment);
+
+            printPhotoGrid.appendChild(card);
+
+        });
+
+        printPhotoGrid.dataset.loaded = "1";
+        printPhotoSection.hidden = printPhotoGrid.children.length === 0;
+
+    } catch(error) {
+
+        printPhotoSection.hidden = true;
+
+    }
+
+}
+
+pdfButton.addEventListener(
+    "click",
+    async () => {
+
+        pdfButton.disabled = true;
+        pdfButton.textContent = "PDF準備中...";
+
+        await loadPrintPhotos();
+        await waitForPrintImages();
+
+        pdfButton.disabled = false;
+        pdfButton.textContent = "PDFで出力";
+
+        window.print();
+
+    }
+);
+
+async function waitForPrintImages() {
+
+    const images =
+        [...document.querySelectorAll(
+            "#printPhotoGrid img"
+        )];
+
+    await Promise.all(
+
+        images.map(image => {
+
+            if (image.complete) {
+                return Promise.resolve();
+            }
+
+            return new Promise(resolve => {
+
+                image.onload = resolve;
+                image.onerror = resolve;
+
+            });
+
+        })
+
+    );
+
 }
 
 function sanitizeProfileHtml(html) {
