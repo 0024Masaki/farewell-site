@@ -1095,3 +1095,33 @@ footer a:hover{
     object-fit:cover;
     object-position:center;
 }
+
+.gallery-info{
+    text-align:left;
+}
+
+.gallery-name{
+    text-align:center;
+}
+
+.gallery-comment{
+    margin-top:8px;
+    margin-bottom:8px;
+    color:var(--text-soft);
+    font-size:14px;
+    line-height:1.6;
+    white-space:pre-line;
+    text-align:left;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
+
+.gallery-date{
+    text-align:center;
+}
+
+.viewer-comment{
+    white-space:pre-line;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
