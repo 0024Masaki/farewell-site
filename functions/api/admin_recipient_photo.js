@@ -1,7 +1,7 @@
 export async function onRequestPost(context) {
     try {
         const adminKey = context.env.ADMIN_KEY || "";
-        const uploadUrl = context.env.PHOTO_UPLOAD_URL || "";
+        const uploadUrl = context.env.PHOTO_SCRIPT_URL || "";
         const uploadKey = context.env.PHOTO_UPLOAD_KEY || "photo";
 
         if (!adminKey) {

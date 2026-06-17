@@ -375,7 +375,10 @@ async function uploadRecipientPhoto() {
         const data = await response.json();
 
         if (!response.ok || !data.ok) {
-            resultMessage.textContent = data.message || "顔写真アップロードに失敗しました。";
+            resultMessage.textContent =
+                data.detail
+                    ? `${data.message || "顔写真アップロードに失敗しました。"}：${data.detail}`
+                    : data.message || "顔写真アップロードに失敗しました。";
             return;
         }
 
