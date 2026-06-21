@@ -1422,3 +1422,25 @@ footer a:hover{
     transform:none !important;
     -webkit-transform:none !important;
 }
+
+/* TOP写真をスマホで横フリックできるようにする */
+.site-hero-slider{
+    touch-action:pan-y;
+    cursor:grab;
+}
+
+.site-hero-slider.is-dragging{
+    cursor:grabbing;
+}
+
+.site-hero-slider.is-dragging .site-hero-track{
+    animation:none !important;
+    transition:none !important;
+}
+
+.site-hero-photo{
+    -webkit-user-drag:none;
+    user-select:none;
+    -webkit-user-select:none;
+    pointer-events:none;
+}
