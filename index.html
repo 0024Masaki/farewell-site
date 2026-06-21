@@ -80,7 +80,6 @@
         let heroScrollerTrack = null;
         let heroScrollerOriginalPhotoCount = 0;
         let heroUserScrolling = false;
-        let heroAutoScrolling = false;
 
         async function loadHeroPhotos() {
             const slider = document.getElementById("siteHeroSlider");
@@ -249,15 +248,9 @@
                     return;
                 }
 
-                heroAutoScrolling = true;
-
                 slider.scrollLeft += speed;
 
                 normalizeHeroScrollPosition(slider);
-
-                setTimeout(() => {
-                    heroAutoScrolling = false;
-                }, 60);
 
             }, 30);
         }
@@ -296,18 +289,29 @@
 
             slider.dataset.heroNativeFlickReady = "1";
 
-            slider.addEventListener("scroll", () => {
+            const beginManualScroll = () => {
                 if (heroScrollerLoopWidth <= 1) {
-                    return;
-                }
-
-                if (heroAutoScrolling) {
                     return;
                 }
 
                 heroUserScrolling = true;
                 pauseHeroScroller();
-                normalizeHeroScrollPosition(slider);
+
+                if (heroScrollerResumeTimerId) {
+                    clearTimeout(heroScrollerResumeTimerId);
+                    heroScrollerResumeTimerId = null;
+                }
+
+                if (heroScrollEndTimerId) {
+                    clearTimeout(heroScrollEndTimerId);
+                    heroScrollEndTimerId = null;
+                }
+            };
+
+            const endManualScroll = () => {
+                if (heroScrollerLoopWidth <= 1) {
+                    return;
+                }
 
                 if (heroScrollEndTimerId) {
                     clearTimeout(heroScrollEndTimerId);
@@ -323,11 +327,40 @@
                         true
                     );
 
-                }, 1000);
+                }, 1200);
+            };
 
+            /*
+                scrollイベントでは停止しない。
+                ここではループ位置の補正だけ行う。
+            */
+            slider.addEventListener("scroll", () => {
+                normalizeHeroScrollPosition(slider);
             }, {
                 passive: true
             });
+
+            /*
+                iPhone / iPad
+            */
+            slider.addEventListener("touchstart", beginManualScroll, {
+                passive: true
+            });
+
+            slider.addEventListener("touchend", endManualScroll, {
+                passive: true
+            });
+
+            slider.addEventListener("touchcancel", endManualScroll, {
+                passive: true
+            });
+
+            /*
+                PC
+            */
+            slider.addEventListener("mousedown", beginManualScroll);
+
+            window.addEventListener("mouseup", endManualScroll);
         }
 
         function normalizeHeroScrollPosition(slider) {
