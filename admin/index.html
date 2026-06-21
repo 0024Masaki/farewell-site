@@ -14,13 +14,44 @@
 
         <h1>管理者メニュー</h1>
 
-        <div class="person-menu">
+        <div id="authPanel" class="form-area">
+            <label class="form-label" for="adminKey">
+                管理用パスキー
+            </label>
+
+            <input
+                id="adminKey"
+                class="input"
+                type="password"
+                placeholder="管理用パスキー"
+                autocomplete="current-password"
+            >
+
+            <button
+                id="loginButton"
+                class="button button-submit"
+                type="button">
+                認証する
+            </button>
+        </div>
+
+        <p id="resultMessage" class="result-message"></p>
+
+        <div id="adminMenu" class="person-menu" hidden>
             <a class="button" href="recipients.html">
                 送別者管理
             </a>
+
             <a class="button" href="notice.html">
                 お知らせ・会場管理
             </a>
+
+            <button
+                id="logoutButton"
+                class="button button-secondary"
+                type="button">
+                認証を解除
+            </button>
 
             <a class="button button-secondary" href="../index.html">
                 トップへ戻る
@@ -28,6 +59,87 @@
         </div>
 
     </div>
+
+<script>
+const adminKey = document.getElementById("adminKey");
+const loginButton = document.getElementById("loginButton");
+const logoutButton = document.getElementById("logoutButton");
+const resultMessage = document.getElementById("resultMessage");
+const authPanel = document.getElementById("authPanel");
+const adminMenu = document.getElementById("adminMenu");
+
+loginButton.addEventListener("click", () => {
+    authenticateAdmin(adminKey.value.trim());
+});
+
+adminKey.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        authenticateAdmin(adminKey.value.trim());
+    }
+});
+
+logoutButton.addEventListener("click", () => {
+    sessionStorage.removeItem("adminKey");
+    adminKey.value = "";
+    authPanel.hidden = false;
+    adminMenu.hidden = true;
+    resultMessage.textContent = "認証を解除しました。";
+});
+
+const savedKey = sessionStorage.getItem("adminKey");
+
+if (savedKey) {
+    adminKey.value = savedKey;
+    authenticateAdmin(savedKey);
+}
+
+async function authenticateAdmin(key) {
+    if (!key) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = "認証中...";
+    resultMessage.textContent = "認証中です...";
+
+    try {
+        const response = await fetch("/api/admin_auth", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                key
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            sessionStorage.removeItem("adminKey");
+            authPanel.hidden = false;
+            adminMenu.hidden = true;
+            resultMessage.textContent = data.message || "認証に失敗しました。";
+            return;
+        }
+
+        sessionStorage.setItem("adminKey", key);
+
+        authPanel.hidden = true;
+        adminMenu.hidden = false;
+        resultMessage.textContent = "認証済みです。";
+
+    } catch (error) {
+        authPanel.hidden = false;
+        adminMenu.hidden = true;
+        resultMessage.textContent = "通信に失敗しました。";
+    } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = "認証する";
+    }
+}
+</script>
 
 </body>
 

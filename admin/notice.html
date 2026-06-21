@@ -79,16 +79,6 @@
             placeholder="https://maps.app.goo.gl/..."
         >
 
-        <label class="form-label" for="routeUrl">
-            ルート検索URL
-        </label>
-        <input
-            id="routeUrl"
-            class="input"
-            maxlength="600"
-            placeholder="https://www.google.com/maps/dir/?api=1&destination=..."
-        >
-
         <label class="form-label" for="noticeText">
             補足メッセージ
         </label>
@@ -142,7 +132,6 @@ const eventDatetime = document.getElementById("eventDatetime");
 const venueName = document.getElementById("venueName");
 const venueAddress = document.getElementById("venueAddress");
 const mapUrl = document.getElementById("mapUrl");
-const routeUrl = document.getElementById("routeUrl");
 const noticeText = document.getElementById("noticeText");
 
 document.getElementById("saveButton").addEventListener("click", saveNotice);
@@ -209,11 +198,6 @@ async function saveNotice() {
         return;
     }
 
-    if (!isHttpsUrlOrEmpty(routeUrl.value)) {
-        resultMessage.textContent = "ルート検索URLは https:// から始まるURLを入力してください。";
-        return;
-    }
-
     resultMessage.textContent = "保存中です...";
 
     try {
@@ -230,7 +214,6 @@ async function saveNotice() {
                 venue_name: venueName.value,
                 venue_address: venueAddress.value,
                 map_url: mapUrl.value,
-                route_url: routeUrl.value,
                 notice_text: noticeText.value
             })
         });
@@ -259,7 +242,6 @@ function setForm(notice) {
     venueName.value = notice.venue_name || "";
     venueAddress.value = notice.venue_address || "";
     mapUrl.value = notice.map_url || "";
-    routeUrl.value = notice.route_url || "";
     noticeText.value = notice.notice_text || "";
 }
 

@@ -45,12 +45,10 @@
 
             <div class="venue-button-row">
                 <a id="venueMapLink" class="button venue-map-button" target="_blank" rel="noopener noreferrer" hidden>
-                    Googleマップを開く
+                    会場をGoogleマップで開く
                 </a>
 
-                <a id="venueRouteLink" class="button button-secondary" target="_blank" rel="noopener noreferrer" hidden>
-                    ルート検索
-                </a>
+
             </div>
         </section>
 
@@ -86,7 +84,7 @@
             const venueAddress = document.getElementById("venueAddress");
             const venueNoticeText = document.getElementById("venueNoticeText");
             const venueMapLink = document.getElementById("venueMapLink");
-            const venueRouteLink = document.getElementById("venueRouteLink");
+            
 
             try {
                 const response = await fetch("/api/site_notice");
@@ -128,11 +126,6 @@
                 setNoticeLink(
                     venueMapLink,
                     notice.map_url
-                );
-
-                setNoticeLink(
-                    venueRouteLink,
-                    notice.route_url
                 );
 
                 venueNotice.hidden = false;
