@@ -1346,3 +1346,43 @@ footer a:hover{
         width:100%;
     }
 }
+
+/* iPhone / スマホでは hover 停止を無効化 */
+@media (hover:none), (pointer:coarse){
+    .site-hero-slider:hover .site-hero-track,
+    .site-hero-slider:active .site-hero-track{
+        animation-play-state:running !important;
+    }
+}
+
+/* PCなどマウス操作できる端末だけ hover 停止を有効化 */
+@media (hover:hover) and (pointer:fine){
+    .site-hero-slider:hover .site-hero-track{
+        animation-play-state:paused;
+    }
+}
+
+/* iPhone Safari向けに横スクロールアニメーションを安定化 */
+.site-hero-track{
+    will-change:transform;
+    transform:translate3d(0,0,0);
+    -webkit-transform:translate3d(0,0,0);
+}
+
+.site-hero-photo{
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    transform:translateZ(0);
+    -webkit-transform:translateZ(0);
+}
+
+/* 既存の keyframes を iPhone向けに translate3d で上書き */
+@keyframes siteHeroMarquee{
+    from{
+        transform:translate3d(0,0,0);
+    }
+
+    to{
+        transform:translate3d(-50%,0,0);
+    }
+}
