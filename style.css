@@ -1541,3 +1541,46 @@ footer a:hover{
         height:190px;
     }
 }
+
+/* 送別者写真をさらに大きく、顔が大きく見えるようにする */
+.recipient-avatar{
+    width:140px;
+    height:140px;
+    border-radius:36px;
+    font-size:40px;
+}
+
+.recipient-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover !important;
+    object-position:center;
+}
+
+/* 個別紹介ページの写真もさらに大きく */
+.person-avatar{
+    width:280px;
+    height:280px;
+}
+
+.person-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover !important;
+    object-position:center;
+}
+
+/* スマホ用 */
+@media (max-width:600px){
+    .recipient-avatar{
+        width:120px;
+        height:120px;
+        border-radius:32px;
+        font-size:36px;
+    }
+
+    .person-avatar{
+        width:230px;
+        height:230px;
+    }
+}
