@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>お知らせ・会場管理</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<div class="card wide-card">
+
+    <h1>お知らせ・会場管理</h1>
+
+    <input
+        id="adminKey"
+        class="input"
+        type="password"
+        placeholder="管理用パスキー"
+    >
+
+    <p id="resultMessage" class="result-message"></p>
+
+    <div id="noticePanel" class="form-area" hidden>
+
+        <label class="form-label">
+            <input id="isVisible" type="checkbox" checked>
+            トップページに表示する
+        </label>
+
+        <label class="form-label" for="noticeTitle">
+            お知らせタイトル
+        </label>
+        <input
+            id="noticeTitle"
+            class="input"
+            maxlength="80"
+            placeholder="例：宴会場のお知らせ"
+        >
+
+        <label class="form-label" for="eventDatetime">
+            日時
+        </label>
+        <input
+            id="eventDatetime"
+            class="input"
+            maxlength="120"
+            placeholder="例：2026年〇月〇日 18:30〜"
+        >
+
+        <label class="form-label" for="venueName">
+            会場名
+        </label>
+        <input
+            id="venueName"
+            class="input"
+            maxlength="120"
+            placeholder="例：〇〇ホテル 2F 〇〇の間"
+        >
+
+        <label class="form-label" for="venueAddress">
+            住所
+        </label>
+        <input
+            id="venueAddress"
+            class="input"
+            maxlength="200"
+            placeholder="例：北海道〇〇市〇〇町〇丁目"
+        >
+
+        <label class="form-label" for="mapUrl">
+            GoogleマップURL
+        </label>
+        <input
+            id="mapUrl"
+            class="input"
+            maxlength="600"
+            placeholder="https://maps.app.goo.gl/..."
+        >
+
+        <label class="form-label" for="routeUrl">
+            ルート検索URL
+        </label>
+        <input
+            id="routeUrl"
+            class="input"
+            maxlength="600"
+            placeholder="https://www.google.com/maps/dir/?api=1&destination=..."
+        >
+
+        <label class="form-label" for="noticeText">
+            補足メッセージ
+        </label>
+        <textarea
+            id="noticeText"
+            class="textarea small-textarea"
+            maxlength="1000"
+            placeholder="例：開始10分前までにお集まりください。"
+        ></textarea>
+
+        <div class="admin-button-row">
+            <button
+                id="saveButton"
+                class="button button-submit"
+                type="button">
+                保存
+            </button>
+
+            <button
+                id="reloadButton"
+                class="button button-secondary"
+                type="button">
+                再読み込み
+            </button>
+        </div>
+
+    </div>
+
+    <div class="person-menu">
+        <a class="button button-secondary" href="index.html">
+            管理者メニューへ戻る
+        </a>
+
+        <a class="button button-secondary" href="../index.html">
+            トップへ戻る
+        </a>
+    </div>
+
+</div>
+
+<script>
+const adminKey = document.getElementById("adminKey");
+const resultMessage = document.getElementById("resultMessage");
+const noticePanel = document.getElementById("noticePanel");
+
+const isVisible = document.getElementById("isVisible");
+const noticeTitle = document.getElementById("noticeTitle");
+const eventDatetime = document.getElementById("eventDatetime");
+const venueName = document.getElementById("venueName");
+const venueAddress = document.getElementById("venueAddress");
+const mapUrl = document.getElementById("mapUrl");
+const routeUrl = document.getElementById("routeUrl");
+const noticeText = document.getElementById("noticeText");
+
+document.getElementById("saveButton").addEventListener("click", saveNotice);
+document.getElementById("reloadButton").addEventListener("click", loadNotice);
+adminKey.addEventListener("change", loadNotice);
+
+const savedKey = sessionStorage.getItem("adminKey");
+
+if (savedKey) {
+    adminKey.value = savedKey;
+    loadNotice();
+}
+
+async function loadNotice() {
+    const key = adminKey.value.trim();
+
+    if (!key) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
+
+    resultMessage.textContent = "読み込み中です...";
+
+    try {
+        const response = await fetch(
+            `/api/admin_site_notice?key=${encodeURIComponent(key)}`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            noticePanel.hidden = true;
+            adminKey.hidden = false;
+            resultMessage.textContent = data.message || "読み込みに失敗しました。";
+            return;
+        }
+
+        sessionStorage.setItem("adminKey", key);
+
+        adminKey.hidden = true;
+        noticePanel.hidden = false;
+
+        setForm(data.notice || {});
+
+        resultMessage.textContent = "お知らせ情報を読み込みました。";
+
+    } catch (error) {
+        noticePanel.hidden = true;
+        adminKey.hidden = false;
+        resultMessage.textContent = "通信に失敗しました。";
+    }
+}
+
+async function saveNotice() {
+    const key = adminKey.value.trim();
+
+    if (!key) {
+        resultMessage.textContent = "管理用パスキーを入力してください。";
+        return;
+    }
+
+    if (!isHttpsUrlOrEmpty(mapUrl.value)) {
+        resultMessage.textContent = "GoogleマップURLは https:// から始まるURLを入力してください。";
+        return;
+    }
+
+    if (!isHttpsUrlOrEmpty(routeUrl.value)) {
+        resultMessage.textContent = "ルート検索URLは https:// から始まるURLを入力してください。";
+        return;
+    }
+
+    resultMessage.textContent = "保存中です...";
+
+    try {
+        const response = await fetch("/api/admin_site_notice", {
+            method: "PUT",
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({
+                key: key,
+                is_visible: isVisible.checked,
+                notice_title: noticeTitle.value,
+                event_datetime: eventDatetime.value,
+                venue_name: venueName.value,
+                venue_address: venueAddress.value,
+                map_url: mapUrl.value,
+                route_url: routeUrl.value,
+                notice_text: noticeText.value
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            resultMessage.textContent =
+                data.detail
+                    ? `${data.message}：${data.detail}`
+                    : data.message || "保存に失敗しました。";
+            return;
+        }
+
+        resultMessage.textContent = data.message || "保存しました。";
+
+    } catch (error) {
+        resultMessage.textContent = "通信に失敗しました。";
+    }
+}
+
+function setForm(notice) {
+    isVisible.checked = Boolean(notice.is_visible);
+    noticeTitle.value = notice.notice_title || "宴会場のお知らせ";
+    eventDatetime.value = notice.event_datetime || "";
+    venueName.value = notice.venue_name || "";
+    venueAddress.value = notice.venue_address || "";
+    mapUrl.value = notice.map_url || "";
+    routeUrl.value = notice.route_url || "";
+    noticeText.value = notice.notice_text || "";
+}
+
+function isHttpsUrlOrEmpty(value) {
+    const url = String(value || "").trim();
+
+    if (!url) {
+        return true;
+    }
+
+    return /^https:\/\/[^\s"'<>]+$/i.test(url);
+}
+</script>
+
+</body>
+</html>

@@ -1,164 +1,301 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第３部送別記念サイト</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第３部送別記念サイト</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="card">
+    <div class="card">
 
-    <div class="site-hero-image">
-        <img src="/images/site-hero.jpg" alt="送別会">
-    </div>
+        <div class="site-hero-image">
+            <img src="/images/site-hero.jpg" alt="送別会">
+        </div>
 
-    <h1>第３部送別記念サイト</h1>
+        <h1>第３部送別記念サイト</h1>
 
-    <p class="subtitle">
-        皆様からの写真やメッセージをお待ちしております
-    </p>
-
-    <div id="recipientList"></div>
-    <footer>
-        <a href="admin/index.html">
-            管理者ページ
-        </a>
-    </footer>
-    <div class="qr-section">
-        <p class="qr-title">スマホで開く</p>
-
-        <img
-            class="site-qr"
-            src="/images/farewell_site_qr.png"
-            alt="送別会ページQRコード"
-        >
-
-        <p class="qr-note">
-            QRコードを読み取ると、このページを開けます、サイトのリンクがわからない方に見せてあげてください。
+        <p class="subtitle">
+            皆様からの写真やメッセージをお待ちしております
         </p>
+        <section id="venueNotice" class="venue-notice" hidden>
+            <h2 id="venueNoticeTitle"></h2>
+
+            <div class="venue-info">
+                <p id="venueDateRow" hidden>
+                    <span>日時</span>
+                    <b id="venueDate"></b>
+                </p>
+
+                <p id="venueNameRow" hidden>
+                    <span>会場</span>
+                    <b id="venueName"></b>
+                </p>
+
+                <p id="venueAddressRow" hidden>
+                    <span>住所</span>
+                    <b id="venueAddress"></b>
+                </p>
+            </div>
+
+            <p id="venueNoticeText" class="venue-notice-text" hidden></p>
+
+            <div class="venue-button-row">
+                <a id="venueMapLink" class="button venue-map-button" target="_blank" rel="noopener noreferrer" hidden>
+                    Googleマップを開く
+                </a>
+
+                <a id="venueRouteLink" class="button button-secondary" target="_blank" rel="noopener noreferrer" hidden>
+                    ルート検索
+                </a>
+            </div>
+        </section>
+
+        <div id="recipientList"></div>
+        <footer>
+            <a href="admin/index.html">
+                管理者ページ
+            </a>
+        </footer>
+        <div class="qr-section">
+            <p class="qr-title">スマホで開く</p>
+
+            <img class="site-qr" src="/images/farewell_site_qr.png" alt="送別会ページQRコード">
+
+            <p class="qr-note">
+                QRコードを読み取ると、このページを開けます、サイトのリンクがわからない方に見せてあげてください。
+            </p>
+        </div>
     </div>
-</div>
 
 
 
-<script>
+    <script>
 
-async function loadRecipients() {
+        async function loadSiteNotice() {
+            const venueNotice = document.getElementById("venueNotice");
+            const venueNoticeTitle = document.getElementById("venueNoticeTitle");
+            const venueDateRow = document.getElementById("venueDateRow");
+            const venueDate = document.getElementById("venueDate");
+            const venueNameRow = document.getElementById("venueNameRow");
+            const venueName = document.getElementById("venueName");
+            const venueAddressRow = document.getElementById("venueAddressRow");
+            const venueAddress = document.getElementById("venueAddress");
+            const venueNoticeText = document.getElementById("venueNoticeText");
+            const venueMapLink = document.getElementById("venueMapLink");
+            const venueRouteLink = document.getElementById("venueRouteLink");
 
-    const list =
-        document.getElementById(
-            "recipientList"
-        );
+            try {
+                const response = await fetch("/api/site_notice");
+                const data = await response.json();
 
-    list.innerHTML =
-        "<p>読み込み中...</p>";
+                if (!data.ok || !data.notice) {
+                    venueNotice.hidden = true;
+                    return;
+                }
 
-    try {
+                const notice = data.notice;
 
-        const response =
-            await fetch(
-                "/api/recipients"
-            );
+                venueNoticeTitle.textContent =
+                    notice.notice_title || "宴会場のお知らせ";
 
-        const data =
-            await response.json();
+                setNoticeRow(
+                    venueDateRow,
+                    venueDate,
+                    notice.event_datetime
+                );
 
-        if (!data.ok) {
+                setNoticeRow(
+                    venueNameRow,
+                    venueName,
+                    notice.venue_name
+                );
 
-            list.innerHTML =
-                "<p>送別者情報を取得できませんでした。</p>";
+                setNoticeRow(
+                    venueAddressRow,
+                    venueAddress,
+                    notice.venue_address
+                );
 
-            return;
+                setNoticeText(
+                    venueNoticeText,
+                    notice.notice_text
+                );
+
+                setNoticeLink(
+                    venueMapLink,
+                    notice.map_url
+                );
+
+                setNoticeLink(
+                    venueRouteLink,
+                    notice.route_url
+                );
+
+                venueNotice.hidden = false;
+
+            } catch (error) {
+                venueNotice.hidden = true;
+            }
         }
 
-        list.innerHTML = "";
+        function setNoticeRow(rowElement, valueElement, value) {
+            const text = String(value || "").trim();
 
-        data.recipients.forEach(
-            recipient => {
+            if (!text) {
+                rowElement.hidden = true;
+                valueElement.textContent = "";
+                return;
+            }
 
-                const card = document.createElement("div");
-                card.className = "recipient-card";
+            valueElement.textContent = text;
+            rowElement.hidden = false;
+        }
 
-                const avatar = createRecipientAvatar(recipient);
+        function setNoticeText(element, value) {
+            const text = String(value || "").trim();
 
-                const content = document.createElement("div");
-                content.className = "recipient-content";
+            if (!text) {
+                element.hidden = true;
+                element.textContent = "";
+                return;
+            }
 
-                const name = document.createElement("h2");
-                name.textContent = recipient.name || "";
+            element.textContent = text;
+            element.hidden = false;
+        }
 
-                const title = document.createElement("p");
-                title.textContent = recipient.title || "";
+        function setNoticeLink(element, value) {
+            const url = String(value || "").trim();
 
-                const link = document.createElement("a");
-                link.className = "button";
-                link.href = `person.html?id=${encodeURIComponent(recipient.id)}`;
-                link.textContent = "この方のページを見る";
+            if (!/^https:\/\/[^\s"'<>]+$/i.test(url)) {
+                element.hidden = true;
+                element.removeAttribute("href");
+                return;
+            }
 
-                content.appendChild(name);
-                content.appendChild(title);
+            element.href = url;
+            element.hidden = false;
+        }
 
-                card.appendChild(avatar);
-                card.appendChild(content);
-                card.appendChild(link);
-                list.appendChild(card);
+        async function loadRecipients() {
+
+            const list =
+                document.getElementById(
+                    "recipientList"
+                );
+
+            list.innerHTML =
+                "<p>読み込み中...</p>";
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/recipients"
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!data.ok) {
+
+                    list.innerHTML =
+                        "<p>送別者情報を取得できませんでした。</p>";
+
+                    return;
+                }
+
+                list.innerHTML = "";
+
+                data.recipients.forEach(
+                    recipient => {
+
+                        const card = document.createElement("div");
+                        card.className = "recipient-card";
+
+                        const avatar = createRecipientAvatar(recipient);
+
+                        const content = document.createElement("div");
+                        content.className = "recipient-content";
+
+                        const name = document.createElement("h2");
+                        name.textContent = recipient.name || "";
+
+                        const title = document.createElement("p");
+                        title.textContent = recipient.title || "";
+
+                        const link = document.createElement("a");
+                        link.className = "button";
+                        link.href = `person.html?id=${encodeURIComponent(recipient.id)}`;
+                        link.textContent = "この方のページを見る";
+
+                        content.appendChild(name);
+                        content.appendChild(title);
+
+                        card.appendChild(avatar);
+                        card.appendChild(content);
+                        card.appendChild(link);
+                        list.appendChild(card);
+
+                    }
+                );
+
+            } catch (error) {
+
+                list.innerHTML =
+                    "<p>通信エラーが発生しました。</p>";
 
             }
-        );
 
-    } catch (error) {
-
-        list.innerHTML =
-            "<p>通信エラーが発生しました。</p>";
-
-    }
-
-}
+        }
 
 
-function createRecipientAvatar(recipient) {
+        function createRecipientAvatar(recipient) {
 
-    const avatar =
-        document.createElement("div");
+            const avatar =
+                document.createElement("div");
 
-    avatar.className =
-        "recipient-avatar";
+            avatar.className =
+                "recipient-avatar";
 
-    const imageUrl =
-        recipient.photo_url ||
-        recipient.image_url ||
-        recipient.avatar_url ||
-        "";
+            const imageUrl =
+                recipient.photo_url ||
+                recipient.image_url ||
+                recipient.avatar_url ||
+                "";
 
-    if (imageUrl) {
+            if (imageUrl) {
 
-        const image =
-            document.createElement("img");
+                const image =
+                    document.createElement("img");
 
-        image.src = imageUrl;
-        image.alt = recipient.name || "送別者";
+                image.src = imageUrl;
+                image.alt = recipient.name || "送別者";
 
-        avatar.appendChild(image);
-        return avatar;
+                avatar.appendChild(image);
+                return avatar;
 
-    }
+            }
 
-    const name =
-        recipient.name || "送";
+            const name =
+                recipient.name || "送";
 
-    avatar.textContent =
-        name.trim().slice(0, 1) || "送";
+            avatar.textContent =
+                name.trim().slice(0, 1) || "送";
 
-    return avatar;
+            return avatar;
 
-}
+        }
 
-loadRecipients();
+        loadSiteNotice();
+        loadRecipients();
 
-</script>
+    </script>
 
 </body>
+
 </html>

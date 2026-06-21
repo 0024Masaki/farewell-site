@@ -1158,3 +1158,85 @@ footer a:hover{
     font-size:13px;
     line-height:1.6;
 }
+
+.venue-notice{
+    margin:26px auto 30px;
+    padding:22px;
+    border-radius:22px;
+    border:1px solid var(--line);
+    background:
+        linear-gradient(180deg, rgba(30,41,59,.88), rgba(15,23,42,.9));
+    box-shadow:0 18px 42px rgba(0,0,0,.24);
+    text-align:left;
+}
+
+.venue-notice h2{
+    margin-bottom:16px;
+    text-align:center;
+    font-size:24px;
+}
+
+.venue-info{
+    display:grid;
+    gap:10px;
+}
+
+.venue-info p{
+    display:grid;
+    grid-template-columns:72px 1fr;
+    gap:10px;
+    color:var(--text-soft);
+    line-height:1.7;
+}
+
+.venue-info span{
+    color:var(--accent);
+    font-weight:bold;
+}
+
+.venue-info b{
+    color:var(--text-soft);
+    font-weight:600;
+}
+
+.venue-notice-text{
+    margin-top:16px;
+    color:var(--text-soft);
+    line-height:1.8;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
+
+.venue-button-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:18px;
+}
+
+.venue-button-row .button{
+    margin:0;
+    text-align:center;
+}
+
+.venue-map-button{
+    background:
+        linear-gradient(135deg, #0ea5e9, #22c55e);
+}
+
+@media (max-width:600px){
+    .venue-notice{
+        padding:18px;
+        margin:22px auto 26px;
+    }
+
+    .venue-info p{
+        grid-template-columns:1fr;
+        gap:2px;
+    }
+
+    .venue-button-row{
+        grid-template-columns:1fr;
+    }
+}
