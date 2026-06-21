@@ -1444,3 +1444,41 @@ footer a:hover{
     -webkit-user-select:none;
     pointer-events:none;
 }
+
+/* ===== TOP写真スライダー Safariフリック安定版 ===== */
+
+.site-hero-slider{
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x pan-y;
+    scroll-behavior:auto;
+    scrollbar-width:none;
+}
+
+.site-hero-slider::-webkit-scrollbar{
+    display:none;
+}
+
+.site-hero-track{
+    position:static !important;
+    left:auto !important;
+    transform:none !important;
+    -webkit-transform:none !important;
+    animation:none !important;
+    will-change:auto !important;
+}
+
+.site-hero-slider:hover .site-hero-track,
+.site-hero-slider:active .site-hero-track{
+    transform:none !important;
+    -webkit-transform:none !important;
+    animation:none !important;
+}
+
+.site-hero-photo{
+    pointer-events:none;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-user-drag:none;
+}

@@ -73,19 +73,19 @@
 
     <script>
         let heroScrollerTimerId = null;
-        let heroScrollerPosition = 0;
-        let heroScrollerLoopWidth = 0;
-
         let heroScrollerResumeTimerId = null;
+        let heroScrollEndTimerId = null;
+        let heroScrollerLoopWidth = 0;
+        let heroScrollerSlider = null;
         let heroScrollerTrack = null;
         let heroScrollerOriginalPhotoCount = 0;
-        let heroDragState = null;
+        let heroUserScrolling = false;
 
         async function loadHeroPhotos() {
             const slider = document.getElementById("siteHeroSlider");
             const track = document.getElementById("siteHeroTrack");
 
-            setupHeroFlick(slider, track);
+            setupHeroNativeFlick(slider, track);
 
             try {
                 const response = await fetch(
@@ -113,9 +113,9 @@
             stopHeroScroller();
 
             slider.classList.add("is-static");
+            slider.scrollLeft = 0;
+
             track.innerHTML = "";
-            track.style.left = "0px";
-            track.style.transform = "none";
 
             const image = document.createElement("img");
             image.className = "site-hero-photo";
@@ -129,9 +129,8 @@
             stopHeroScroller();
 
             slider.classList.remove("is-static");
+            slider.scrollLeft = 0;
             track.innerHTML = "";
-            track.style.left = "0px";
-            track.style.transform = "none";
 
             const safePhotos =
                 photos.filter(photo =>
@@ -154,8 +153,8 @@
             const loopPhotos = [];
 
             /*
-                iPhoneで途中停止しないように、多めに並べる。
-                最低12枚分は横に並べる。
+                3周以上並べる。
+                iPhoneのネイティブ横スクロールで触れるようにする。
             */
             while (
                 loopPhotos.length < safePhotos.length * 3 ||
@@ -174,7 +173,12 @@
             waitForHeroImages(track)
                 .then(() => {
                     setTimeout(() => {
-                        startHeroScroller(track, safePhotos.length);
+                        startHeroScroller(
+                            slider,
+                            track,
+                            safePhotos.length,
+                            false
+                        );
                     }, 300);
                 });
         }
@@ -208,15 +212,17 @@
             return Promise.all(waits);
         }
 
-        function startHeroScroller(track, originalPhotoCount, keepPosition = false) {
+        function startHeroScroller(
+            slider,
+            track,
+            originalPhotoCount,
+            keepPosition
+        ) {
             pauseHeroScroller();
 
+            heroScrollerSlider = slider;
             heroScrollerTrack = track;
             heroScrollerOriginalPhotoCount = originalPhotoCount;
-
-            if (!keepPosition) {
-                heroScrollerPosition = 0;
-            }
 
             heroScrollerLoopWidth =
                 calculateHeroLoopWidth(track, originalPhotoCount);
@@ -225,22 +231,26 @@
                 return;
             }
 
-            heroScrollerPosition =
-                normalizeHeroPosition(heroScrollerPosition);
-
-            applyHeroPosition(track);
-
             /*
-                自動で流れる速度。
-                数値を上げると速くなる。
+                3周並んでいるうち、真ん中の周から開始する。
+                左右どちらにフリックしても余裕を持たせる。
             */
-            const speed = 1.1;
+            if (!keepPosition) {
+                slider.scrollLeft = heroScrollerLoopWidth;
+            }
+
+            normalizeHeroScrollPosition(slider);
+
+            const speed = 1;
 
             heroScrollerTimerId = setInterval(() => {
-                heroScrollerPosition =
-                    normalizeHeroPosition(heroScrollerPosition + speed);
+                if (heroUserScrolling) {
+                    return;
+                }
 
-                applyHeroPosition(track);
+                slider.scrollLeft += speed;
+
+                normalizeHeroScrollPosition(slider);
 
             }, 30);
         }
@@ -260,141 +270,72 @@
                 heroScrollerResumeTimerId = null;
             }
 
-            heroScrollerPosition = 0;
+            if (heroScrollEndTimerId) {
+                clearTimeout(heroScrollEndTimerId);
+                heroScrollEndTimerId = null;
+            }
+
             heroScrollerLoopWidth = 0;
+            heroScrollerSlider = null;
             heroScrollerTrack = null;
             heroScrollerOriginalPhotoCount = 0;
-            heroDragState = null;
+            heroUserScrolling = false;
         }
 
-        function setupHeroFlick(slider, track) {
-            if (slider.dataset.heroFlickReady === "1") {
+        function setupHeroNativeFlick(slider, track) {
+            if (slider.dataset.heroNativeFlickReady === "1") {
                 return;
             }
 
-            slider.dataset.heroFlickReady = "1";
+            slider.dataset.heroNativeFlickReady = "1";
 
-            slider.addEventListener("pointerdown", event => {
-                if (event.pointerType === "mouse" && event.button !== 0) {
+            slider.addEventListener("scroll", () => {
+                if (heroScrollerLoopWidth <= 1) {
                     return;
                 }
 
-                if (!heroScrollerTrack || heroScrollerLoopWidth <= 1) {
-                    return;
-                }
-
-                if (heroScrollerResumeTimerId) {
-                    clearTimeout(heroScrollerResumeTimerId);
-                    heroScrollerResumeTimerId = null;
-                }
-
+                heroUserScrolling = true;
                 pauseHeroScroller();
+                normalizeHeroScrollPosition(slider);
 
-                heroDragState = {
-                    pointerId: event.pointerId,
-                    startX: event.clientX,
-                    startPosition: heroScrollerPosition
-                };
-
-                slider.classList.add("is-dragging");
-
-                try {
-                    slider.setPointerCapture(event.pointerId);
-                } catch (error) {
-                }
-            });
-
-            slider.addEventListener("pointermove", event => {
-                if (!heroDragState) {
-                    return;
+                if (heroScrollEndTimerId) {
+                    clearTimeout(heroScrollEndTimerId);
                 }
 
-                if (event.pointerId !== heroDragState.pointerId) {
-                    return;
-                }
+                heroScrollEndTimerId = setTimeout(() => {
+                    heroUserScrolling = false;
 
-                const deltaX =
-                    event.clientX - heroDragState.startX;
-
-                heroScrollerPosition =
-                    normalizeHeroPosition(
-                        heroDragState.startPosition - deltaX
+                    startHeroScroller(
+                        slider,
+                        track,
+                        heroScrollerOriginalPhotoCount,
+                        true
                     );
 
-                applyHeroPosition(track);
+                }, 1000);
 
-                event.preventDefault();
-            });
-
-            slider.addEventListener("pointerup", event => {
-                finishHeroDrag(slider, track, event);
-            });
-
-            slider.addEventListener("pointercancel", event => {
-                finishHeroDrag(slider, track, event);
-            });
-
-            slider.addEventListener("lostpointercapture", event => {
-                finishHeroDrag(slider, track, event);
+            }, {
+                passive: true
             });
         }
 
-        function finishHeroDrag(slider, track, event) {
-            if (!heroDragState) {
-                return;
-            }
-
-            if (
-                event &&
-                event.pointerId !== undefined &&
-                event.pointerId !== heroDragState.pointerId
-            ) {
-                return;
-            }
-
-            try {
-                slider.releasePointerCapture(heroDragState.pointerId);
-            } catch (error) {
-            }
-
-            heroDragState = null;
-            slider.classList.remove("is-dragging");
-
+        function normalizeHeroScrollPosition(slider) {
             if (heroScrollerLoopWidth <= 1) {
                 return;
             }
 
             /*
-                指を離して少し待ってから自動スクロール再開。
-                すぐ再開すると「勝手に戻された感」が出るので少し待つ。
+                3周分のうち、真ん中周辺に戻す。
+                見た目は同じ写真列なので、ジャンプしても分からない。
             */
-            heroScrollerResumeTimerId = setTimeout(() => {
-                startHeroScroller(
-                    track,
-                    heroScrollerOriginalPhotoCount,
-                    true
-                );
-            }, 1400);
-        }
-
-        function normalizeHeroPosition(value) {
-            if (heroScrollerLoopWidth <= 1) {
-                return 0;
+            if (slider.scrollLeft < heroScrollerLoopWidth * 0.45) {
+                slider.scrollLeft += heroScrollerLoopWidth;
+                return;
             }
 
-            let normalized =
-                value % heroScrollerLoopWidth;
-
-            if (normalized < 0) {
-                normalized += heroScrollerLoopWidth;
+            if (slider.scrollLeft > heroScrollerLoopWidth * 1.55) {
+                slider.scrollLeft -= heroScrollerLoopWidth;
             }
-
-            return normalized;
-        }
-
-        function applyHeroPosition(track) {
-            track.style.left =
-                `-${Math.round(heroScrollerPosition)}px`;
         }
 
         function calculateHeroLoopWidth(track, originalPhotoCount) {
@@ -418,10 +359,6 @@
                 width += photo.getBoundingClientRect().width;
             });
 
-            /*
-                最初の1周分の隙間。
-                最後の写真から次の1枚目に戻る境目のgapも含める。
-            */
             width += gap * photos.length;
 
             return Math.max(1, width);
