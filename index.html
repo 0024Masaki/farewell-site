@@ -80,6 +80,7 @@
         let heroScrollerTrack = null;
         let heroScrollerOriginalPhotoCount = 0;
         let heroUserScrolling = false;
+        let heroAutoScrolling = false;
 
         async function loadHeroPhotos() {
             const slider = document.getElementById("siteHeroSlider");
@@ -241,16 +242,22 @@
 
             normalizeHeroScrollPosition(slider);
 
-            const speed = 1;
+            const speed = 2;
 
             heroScrollerTimerId = setInterval(() => {
                 if (heroUserScrolling) {
                     return;
                 }
 
+                heroAutoScrolling = true;
+
                 slider.scrollLeft += speed;
 
                 normalizeHeroScrollPosition(slider);
+
+                setTimeout(() => {
+                    heroAutoScrolling = false;
+                }, 60);
 
             }, 30);
         }
@@ -291,6 +298,10 @@
 
             slider.addEventListener("scroll", () => {
                 if (heroScrollerLoopWidth <= 1) {
+                    return;
+                }
+
+                if (heroAutoScrolling) {
                     return;
                 }
 
