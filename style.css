@@ -1386,3 +1386,39 @@ footer a:hover{
         transform:translate3d(-50%,0,0);
     }
 }
+
+/* iPhone Safari対策：CSS animationではなくJSで動かす */
+.site-hero-track{
+    animation:none !important;
+    transform:translate3d(0,0,0);
+    -webkit-transform:translate3d(0,0,0);
+    will-change:transform;
+}
+
+.site-hero-slider:hover .site-hero-track,
+.site-hero-slider:active .site-hero-track{
+    animation-play-state:running !important;
+}
+
+/* ===== TOP写真スライダー iPhone Safari最終対策 ===== */
+
+.site-hero-track{
+    position:relative;
+    left:0;
+    animation:none !important;
+    transform:none !important;
+    -webkit-transform:none !important;
+    will-change:left;
+}
+
+.site-hero-slider:hover .site-hero-track,
+.site-hero-slider:active .site-hero-track{
+    animation:none !important;
+    transform:none !important;
+    -webkit-transform:none !important;
+}
+
+.site-hero-photo{
+    transform:none !important;
+    -webkit-transform:none !important;
+}
