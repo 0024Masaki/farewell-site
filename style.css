@@ -1512,3 +1512,32 @@ footer a:hover{
         flex-basis:300px;
     }
 }
+
+/* 送別者一覧の顔写真を大きくする */
+.recipient-avatar{
+    width:112px;
+    height:112px;
+    border-radius:32px;
+    font-size:34px;
+}
+
+/* 個別紹介ページの顔写真を大きくする */
+.person-avatar{
+    width:230px;
+    height:230px;
+}
+
+/* スマホでは少し抑える */
+@media (max-width:600px){
+    .recipient-avatar{
+        width:96px;
+        height:96px;
+        border-radius:28px;
+        font-size:30px;
+    }
+
+    .person-avatar{
+        width:190px;
+        height:190px;
+    }
+}
