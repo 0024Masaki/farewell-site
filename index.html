@@ -76,9 +76,16 @@
         let heroScrollerPosition = 0;
         let heroScrollerLoopWidth = 0;
 
+        let heroScrollerResumeTimerId = null;
+        let heroScrollerTrack = null;
+        let heroScrollerOriginalPhotoCount = 0;
+        let heroDragState = null;
+
         async function loadHeroPhotos() {
             const slider = document.getElementById("siteHeroSlider");
             const track = document.getElementById("siteHeroTrack");
+
+            setupHeroFlick(slider, track);
 
             try {
                 const response = await fetch(
@@ -201,10 +208,16 @@
             return Promise.all(waits);
         }
 
-        function startHeroScroller(track, originalPhotoCount) {
-            stopHeroScroller();
+        function startHeroScroller(track, originalPhotoCount, keepPosition = false) {
+            pauseHeroScroller();
 
-            heroScrollerPosition = 0;
+            heroScrollerTrack = track;
+            heroScrollerOriginalPhotoCount = originalPhotoCount;
+
+            if (!keepPosition) {
+                heroScrollerPosition = 0;
+            }
+
             heroScrollerLoopWidth =
                 calculateHeroLoopWidth(track, originalPhotoCount);
 
@@ -212,24 +225,176 @@
                 return;
             }
 
+            heroScrollerPosition =
+                normalizeHeroPosition(heroScrollerPosition);
+
+            applyHeroPosition(track);
+
             /*
-                iPhoneでも分かりやすい速度。
+                自動で流れる速度。
                 数値を上げると速くなる。
             */
             const speed = 1.1;
 
             heroScrollerTimerId = setInterval(() => {
-                heroScrollerPosition += speed;
+                heroScrollerPosition =
+                    normalizeHeroPosition(heroScrollerPosition + speed);
 
-                if (heroScrollerPosition >= heroScrollerLoopWidth) {
-                    heroScrollerPosition =
-                        heroScrollerPosition % heroScrollerLoopWidth;
-                }
-
-                track.style.left =
-                    `-${Math.round(heroScrollerPosition)}px`;
+                applyHeroPosition(track);
 
             }, 30);
+        }
+
+        function pauseHeroScroller() {
+            if (heroScrollerTimerId) {
+                clearInterval(heroScrollerTimerId);
+                heroScrollerTimerId = null;
+            }
+        }
+
+        function stopHeroScroller() {
+            pauseHeroScroller();
+
+            if (heroScrollerResumeTimerId) {
+                clearTimeout(heroScrollerResumeTimerId);
+                heroScrollerResumeTimerId = null;
+            }
+
+            heroScrollerPosition = 0;
+            heroScrollerLoopWidth = 0;
+            heroScrollerTrack = null;
+            heroScrollerOriginalPhotoCount = 0;
+            heroDragState = null;
+        }
+
+        function setupHeroFlick(slider, track) {
+            if (slider.dataset.heroFlickReady === "1") {
+                return;
+            }
+
+            slider.dataset.heroFlickReady = "1";
+
+            slider.addEventListener("pointerdown", event => {
+                if (event.pointerType === "mouse" && event.button !== 0) {
+                    return;
+                }
+
+                if (!heroScrollerTrack || heroScrollerLoopWidth <= 1) {
+                    return;
+                }
+
+                if (heroScrollerResumeTimerId) {
+                    clearTimeout(heroScrollerResumeTimerId);
+                    heroScrollerResumeTimerId = null;
+                }
+
+                pauseHeroScroller();
+
+                heroDragState = {
+                    pointerId: event.pointerId,
+                    startX: event.clientX,
+                    startPosition: heroScrollerPosition
+                };
+
+                slider.classList.add("is-dragging");
+
+                try {
+                    slider.setPointerCapture(event.pointerId);
+                } catch (error) {
+                }
+            });
+
+            slider.addEventListener("pointermove", event => {
+                if (!heroDragState) {
+                    return;
+                }
+
+                if (event.pointerId !== heroDragState.pointerId) {
+                    return;
+                }
+
+                const deltaX =
+                    event.clientX - heroDragState.startX;
+
+                heroScrollerPosition =
+                    normalizeHeroPosition(
+                        heroDragState.startPosition - deltaX
+                    );
+
+                applyHeroPosition(track);
+
+                event.preventDefault();
+            });
+
+            slider.addEventListener("pointerup", event => {
+                finishHeroDrag(slider, track, event);
+            });
+
+            slider.addEventListener("pointercancel", event => {
+                finishHeroDrag(slider, track, event);
+            });
+
+            slider.addEventListener("lostpointercapture", event => {
+                finishHeroDrag(slider, track, event);
+            });
+        }
+
+        function finishHeroDrag(slider, track, event) {
+            if (!heroDragState) {
+                return;
+            }
+
+            if (
+                event &&
+                event.pointerId !== undefined &&
+                event.pointerId !== heroDragState.pointerId
+            ) {
+                return;
+            }
+
+            try {
+                slider.releasePointerCapture(heroDragState.pointerId);
+            } catch (error) {
+            }
+
+            heroDragState = null;
+            slider.classList.remove("is-dragging");
+
+            if (heroScrollerLoopWidth <= 1) {
+                return;
+            }
+
+            /*
+                指を離して少し待ってから自動スクロール再開。
+                すぐ再開すると「勝手に戻された感」が出るので少し待つ。
+            */
+            heroScrollerResumeTimerId = setTimeout(() => {
+                startHeroScroller(
+                    track,
+                    heroScrollerOriginalPhotoCount,
+                    true
+                );
+            }, 1400);
+        }
+
+        function normalizeHeroPosition(value) {
+            if (heroScrollerLoopWidth <= 1) {
+                return 0;
+            }
+
+            let normalized =
+                value % heroScrollerLoopWidth;
+
+            if (normalized < 0) {
+                normalized += heroScrollerLoopWidth;
+            }
+
+            return normalized;
+        }
+
+        function applyHeroPosition(track) {
+            track.style.left =
+                `-${Math.round(heroScrollerPosition)}px`;
         }
 
         function calculateHeroLoopWidth(track, originalPhotoCount) {
@@ -261,17 +426,6 @@
 
             return Math.max(1, width);
         }
-
-        function stopHeroScroller() {
-            if (heroScrollerTimerId) {
-                clearInterval(heroScrollerTimerId);
-                heroScrollerTimerId = null;
-            }
-
-            heroScrollerPosition = 0;
-            heroScrollerLoopWidth = 0;
-        }
-
 
         async function loadSiteNotice() {
             const venueNotice = document.getElementById("venueNotice");
