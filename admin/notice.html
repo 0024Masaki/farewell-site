@@ -1,260 +1,543 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>お知らせ・会場管理</title>
-<link rel="stylesheet" href="../style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>お知らせ・会場管理</title>
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
 
-<div class="card wide-card">
+    <div class="card wide-card">
 
-    <h1>お知らせ・会場管理</h1>
+        <h1>お知らせ・会場管理</h1>
 
-    <input
-        id="adminKey"
-        class="input"
-        type="password"
-        placeholder="管理用パスキー"
-    >
+        <input id="adminKey" class="input" type="password" placeholder="管理用パスキー">
 
+        <section class="hero-photo-admin-section">
+            <h2>TOP写真管理</h2>
 
+            <p class="input-help-text">
+                追加した写真がトップページ上部でゆっくり流れます。複数枚まとめて追加できます。
+            </p>
 
-    <div id="noticePanel" class="form-area" hidden>
+            <input id="heroPhotoFiles" class="input" type="file" accept="image/jpeg,image/png,image/webp" multiple>
 
-        <label class="form-label">
-            <input id="isVisible" type="checkbox" checked>
-            トップページに表示する
-        </label>
-
-        <label class="form-label" for="noticeTitle">
-            お知らせタイトル
-        </label>
-        <input
-            id="noticeTitle"
-            class="input"
-            maxlength="80"
-            placeholder="例：宴会場のお知らせ"
-        >
-
-        <label class="form-label" for="eventDatetime">
-            日時
-        </label>
-        <input
-            id="eventDatetime"
-            class="input"
-            maxlength="120"
-            placeholder="例：2026年〇月〇日 18:30〜"
-        >
-
-        <label class="form-label" for="venueName">
-            会場名
-        </label>
-        <input
-            id="venueName"
-            class="input"
-            maxlength="120"
-            placeholder="例：〇〇ホテル 2F 〇〇の間"
-        >
-
-        <label class="form-label" for="venueAddress">
-            住所
-        </label>
-        <input
-            id="venueAddress"
-            class="input"
-            maxlength="200"
-            placeholder="例：北海道〇〇市〇〇町〇丁目"
-        >
-
-        <label class="form-label" for="mapUrl">
-            GoogleマップURL
-        </label>
-        <input
-            id="mapUrl"
-            class="input"
-            maxlength="600"
-            placeholder="https://maps.app.goo.gl/..."
-        >
-
-        <label class="form-label" for="noticeText">
-            補足メッセージ
-        </label>
-        <textarea
-            id="noticeText"
-            class="textarea small-textarea"
-            maxlength="1000"
-            placeholder="例：開始10分前までにお集まりください。"
-        ></textarea>
-
-        <div class="admin-button-row">
-            <button
-                id="saveButton"
-                class="button button-submit"
-                type="button">
-                保存
+            <button id="heroPhotoUploadButton" class="button button-submit" type="button">
+                TOP写真を追加
             </button>
 
-            <p id="resultMessage" class="result-message"></p>
+            <div id="heroPhotoList" class="hero-photo-admin-list">
+            </div>
+        </section>
 
-            <button
-                id="reloadButton"
-                class="button button-secondary"
-                type="button">
-                再読み込み
-            </button>
+
+
+        <div id="noticePanel" class="form-area" hidden>
+
+            <label class="form-label">
+                <input id="isVisible" type="checkbox" checked>
+                トップページに表示する
+            </label>
+
+            <label class="form-label" for="noticeTitle">
+                お知らせタイトル
+            </label>
+            <input id="noticeTitle" class="input" maxlength="80" placeholder="例：宴会場のお知らせ">
+
+            <label class="form-label" for="eventDatetime">
+                日時
+            </label>
+            <input id="eventDatetime" class="input" maxlength="120" placeholder="例：2026年〇月〇日 18:30〜">
+
+            <label class="form-label" for="venueName">
+                会場名
+            </label>
+            <input id="venueName" class="input" maxlength="120" placeholder="例：〇〇ホテル 2F 〇〇の間">
+
+            <label class="form-label" for="venueAddress">
+                住所
+            </label>
+            <input id="venueAddress" class="input" maxlength="200" placeholder="例：北海道〇〇市〇〇町〇丁目">
+
+            <label class="form-label" for="mapUrl">
+                GoogleマップURL
+            </label>
+            <input id="mapUrl" class="input" maxlength="600" placeholder="https://maps.app.goo.gl/...">
+
+            <label class="form-label" for="noticeText">
+                補足メッセージ
+            </label>
+            <textarea id="noticeText" class="textarea small-textarea" maxlength="1000"
+                placeholder="例：開始10分前までにお集まりください。"></textarea>
+
+            <div class="admin-button-row">
+                <button id="saveButton" class="button button-submit" type="button">
+                    保存
+                </button>
+
+                <p id="resultMessage" class="result-message"></p>
+
+                <button id="reloadButton" class="button button-secondary" type="button">
+                    再読み込み
+                </button>
+            </div>
+
+        </div>
+
+        <div class="person-menu">
+            <a class="button button-secondary" href="index.html">
+                管理者メニューへ戻る
+            </a>
+
+            <a class="button button-secondary" href="../index.html">
+                トップへ戻る
+            </a>
         </div>
 
     </div>
 
-    <div class="person-menu">
-        <a class="button button-secondary" href="index.html">
-            管理者メニューへ戻る
-        </a>
+    <script>
+        const adminKey = document.getElementById("adminKey");
+        const resultMessage = document.getElementById("resultMessage");
+        const noticePanel = document.getElementById("noticePanel");
 
-        <a class="button button-secondary" href="../index.html">
-            トップへ戻る
-        </a>
-    </div>
+        const isVisible = document.getElementById("isVisible");
+        const noticeTitle = document.getElementById("noticeTitle");
+        const eventDatetime = document.getElementById("eventDatetime");
+        const venueName = document.getElementById("venueName");
+        const venueAddress = document.getElementById("venueAddress");
+        const mapUrl = document.getElementById("mapUrl");
+        const noticeText = document.getElementById("noticeText");
 
-</div>
+        const heroPhotoFiles = document.getElementById("heroPhotoFiles");
+        const heroPhotoUploadButton = document.getElementById("heroPhotoUploadButton");
+        const heroPhotoList = document.getElementById("heroPhotoList");
+        const maxHeroUploadFiles = 20;
 
-<script>
-const adminKey = document.getElementById("adminKey");
-const resultMessage = document.getElementById("resultMessage");
-const noticePanel = document.getElementById("noticePanel");
+        document.getElementById("saveButton").addEventListener("click", saveNotice);
+        document.getElementById("reloadButton").addEventListener("click", loadNotice);
+        heroPhotoUploadButton.addEventListener("click", uploadHeroPhotos);
+        adminKey.addEventListener("change", loadNotice);
 
-const isVisible = document.getElementById("isVisible");
-const noticeTitle = document.getElementById("noticeTitle");
-const eventDatetime = document.getElementById("eventDatetime");
-const venueName = document.getElementById("venueName");
-const venueAddress = document.getElementById("venueAddress");
-const mapUrl = document.getElementById("mapUrl");
-const noticeText = document.getElementById("noticeText");
+        const savedKey = sessionStorage.getItem("adminKey");
 
-document.getElementById("saveButton").addEventListener("click", saveNotice);
-document.getElementById("reloadButton").addEventListener("click", loadNotice);
-adminKey.addEventListener("change", loadNotice);
-
-const savedKey = sessionStorage.getItem("adminKey");
-
-if (savedKey) {
-    adminKey.value = savedKey;
-    loadNotice();
-}
-
-async function loadNotice() {
-    const key = adminKey.value.trim();
-
-    if (!key) {
-        resultMessage.textContent = "管理用パスキーを入力してください。";
-        return;
-    }
-
-    resultMessage.textContent = "読み込み中です...";
-
-    try {
-        const response = await fetch(
-            `/api/admin_site_notice?key=${encodeURIComponent(key)}`
-        );
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-            noticePanel.hidden = true;
-            adminKey.hidden = false;
-            resultMessage.textContent = data.message || "読み込みに失敗しました。";
-            return;
+        if (savedKey) {
+            adminKey.value = savedKey;
+            loadNotice();
         }
 
-        sessionStorage.setItem("adminKey", key);
+        async function loadNotice() {
+            const key = adminKey.value.trim();
 
-        adminKey.hidden = true;
-        noticePanel.hidden = false;
+            if (!key) {
+                resultMessage.textContent = "管理用パスキーを入力してください。";
+                return;
+            }
 
-        setForm(data.notice || {});
+            resultMessage.textContent = "読み込み中です...";
 
-        resultMessage.textContent = "お知らせ情報を読み込みました。";
+            try {
+                const response = await fetch(
+                    `/api/admin_site_notice?key=${encodeURIComponent(key)}`
+                );
 
-    } catch (error) {
-        noticePanel.hidden = true;
-        adminKey.hidden = false;
-        resultMessage.textContent = "通信に失敗しました。";
-    }
-}
+                const data = await response.json();
 
-async function saveNotice() {
-    const key = adminKey.value.trim();
+                if (!response.ok || !data.ok) {
+                    noticePanel.hidden = true;
+                    adminKey.hidden = false;
+                    resultMessage.textContent = data.message || "読み込みに失敗しました。";
+                    return;
+                }
 
-    if (!key) {
-        resultMessage.textContent = "管理用パスキーを入力してください。";
-        return;
-    }
+                sessionStorage.setItem("adminKey", key);
 
-    if (!isHttpsUrlOrEmpty(mapUrl.value)) {
-        resultMessage.textContent = "GoogleマップURLは https:// から始まるURLを入力してください。";
-        return;
-    }
+                adminKey.hidden = true;
+                noticePanel.hidden = false;
 
-    resultMessage.textContent = "保存中です...";
+                setForm(data.notice || {});
+                await loadHeroPhotoList();
 
-    try {
-        const response = await fetch("/api/admin_site_notice", {
-            method: "PUT",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify({
-                key: key,
-                is_visible: isVisible.checked,
-                notice_title: noticeTitle.value,
-                event_datetime: eventDatetime.value,
-                venue_name: venueName.value,
-                venue_address: venueAddress.value,
-                map_url: mapUrl.value,
-                notice_text: noticeText.value
-            })
-        });
+                resultMessage.textContent = "お知らせ情報を読み込みました。";
 
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-            resultMessage.textContent =
-                data.detail
-                    ? `${data.message}：${data.detail}`
-                    : data.message || "保存に失敗しました。";
-            return;
+            } catch (error) {
+                noticePanel.hidden = true;
+                adminKey.hidden = false;
+                resultMessage.textContent = "通信に失敗しました。";
+            }
         }
 
-        resultMessage.textContent = data.message || "保存しました。";
+        async function saveNotice() {
+            const key = adminKey.value.trim();
 
-    } catch (error) {
-        resultMessage.textContent = "通信に失敗しました。";
-    }
-}
+            if (!key) {
+                resultMessage.textContent = "管理用パスキーを入力してください。";
+                return;
+            }
 
-function setForm(notice) {
-    isVisible.checked = Boolean(notice.is_visible);
-    noticeTitle.value = notice.notice_title || "宴会場のお知らせ";
-    eventDatetime.value = notice.event_datetime || "";
-    venueName.value = notice.venue_name || "";
-    venueAddress.value = notice.venue_address || "";
-    mapUrl.value = notice.map_url || "";
-    noticeText.value = notice.notice_text || "";
-}
+            if (!isHttpsUrlOrEmpty(mapUrl.value)) {
+                resultMessage.textContent = "GoogleマップURLは https:// から始まるURLを入力してください。";
+                return;
+            }
 
-function isHttpsUrlOrEmpty(value) {
-    const url = String(value || "").trim();
+            resultMessage.textContent = "保存中です...";
 
-    if (!url) {
-        return true;
-    }
+            try {
+                const response = await fetch("/api/admin_site_notice", {
+                    method: "PUT",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        key: key,
+                        is_visible: isVisible.checked,
+                        notice_title: noticeTitle.value,
+                        event_datetime: eventDatetime.value,
+                        venue_name: venueName.value,
+                        venue_address: venueAddress.value,
+                        map_url: mapUrl.value,
+                        notice_text: noticeText.value
+                    })
+                });
 
-    return /^https:\/\/[^\s"'<>]+$/i.test(url);
-}
-</script>
+                const data = await response.json();
+
+                if (!response.ok || !data.ok) {
+                    resultMessage.textContent =
+                        data.detail
+                            ? `${data.message}：${data.detail}`
+                            : data.message || "保存に失敗しました。";
+                    return;
+                }
+
+                resultMessage.textContent = data.message || "保存しました。";
+
+            } catch (error) {
+                resultMessage.textContent = "通信に失敗しました。";
+            }
+        }
+
+        function setForm(notice) {
+            isVisible.checked = Boolean(notice.is_visible);
+            noticeTitle.value = notice.notice_title || "宴会場のお知らせ";
+            eventDatetime.value = notice.event_datetime || "";
+            venueName.value = notice.venue_name || "";
+            venueAddress.value = notice.venue_address || "";
+            mapUrl.value = notice.map_url || "";
+            noticeText.value = notice.notice_text || "";
+        }
+
+        function isHttpsUrlOrEmpty(value) {
+            const url = String(value || "").trim();
+
+            if (!url) {
+                return true;
+            }
+
+            return /^https:\/\/[^\s"'<>]+$/i.test(url);
+        }
+        async function loadHeroPhotoList() {
+            const key = adminKey.value.trim();
+
+            if (!key) {
+                return;
+            }
+
+            heroPhotoList.innerHTML = "<p>TOP写真を読み込み中です...</p>";
+
+            try {
+                const response = await fetch(
+                    `/api/admin_site_hero_photos?key=${encodeURIComponent(key)}`
+                );
+
+                const data = await response.json();
+
+                heroPhotoList.innerHTML = "";
+
+                if (!response.ok || !data.ok) {
+                    heroPhotoList.innerHTML =
+                        `<p class="error-message">${data.message || "TOP写真を取得できませんでした。"}</p>`;
+                    return;
+                }
+
+                if (!data.photos || data.photos.length === 0) {
+                    heroPhotoList.innerHTML =
+                        "<p>TOP写真はまだ登録されていません。</p>";
+                    return;
+                }
+
+                data.photos.forEach(photo => {
+                    const card = document.createElement("div");
+                    card.className = "hero-photo-admin-card";
+
+                    const image = document.createElement("img");
+                    image.src = photo.image_url;
+                    image.alt = "TOP写真";
+
+                    const info = document.createElement("div");
+                    info.className = "hero-photo-admin-info";
+                    info.textContent = `表示順：${photo.sort_order}`;
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.className = "button danger-button";
+                    deleteButton.type = "button";
+                    deleteButton.textContent = "削除";
+                    deleteButton.addEventListener("click", () => {
+                        deleteHeroPhoto(photo.id);
+                    });
+
+                    card.appendChild(image);
+                    card.appendChild(info);
+                    card.appendChild(deleteButton);
+
+                    heroPhotoList.appendChild(card);
+                });
+
+            } catch (error) {
+                heroPhotoList.innerHTML =
+                    "<p class='error-message'>TOP写真の取得に失敗しました。</p>";
+            }
+        }
+
+        async function uploadHeroPhotos() {
+            const key = adminKey.value.trim();
+
+            if (!key) {
+                resultMessage.textContent = "管理用パスキーを入力してください。";
+                return;
+            }
+
+            const files = [...heroPhotoFiles.files];
+
+            if (files.length === 0) {
+                resultMessage.textContent = "追加する写真を選択してください。";
+                return;
+            }
+
+            if (files.length > maxHeroUploadFiles) {
+                resultMessage.textContent =
+                    `一度に追加できる写真は${maxHeroUploadFiles}枚までです。`;
+                return;
+            }
+
+            const invalidFile =
+                files.find(file =>
+                    !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+                );
+
+            if (invalidFile) {
+                resultMessage.textContent =
+                    "JPEG、PNG、WebP の写真を選択してください。";
+                return;
+            }
+
+            heroPhotoUploadButton.disabled = true;
+            heroPhotoUploadButton.textContent = "追加中...";
+
+            let successCount = 0;
+            const failedMessages = [];
+
+            try {
+                for (let index = 0; index < files.length; index++) {
+                    const file = files[index];
+
+                    resultMessage.textContent =
+                        `${index + 1}/${files.length}枚目を追加中です...`;
+
+                    try {
+                        const compressedFile =
+                            await compressImage(file);
+
+                        const base64 =
+                            await fileToBase64(compressedFile);
+
+                        const response = await fetch("/api/admin_site_hero_photos", {
+                            method: "POST",
+                            headers: {
+                                "content-type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                key,
+                                fileName: compressedFile.name,
+                                mimeType: compressedFile.type,
+                                base64
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.ok) {
+                            successCount++;
+                        } else {
+                            failedMessages.push(
+                                `${file.name}：${data.message || "追加に失敗しました。"}`
+                            );
+                        }
+
+                        await sleep(250);
+
+                    } catch (error) {
+                        failedMessages.push(
+                            `${file.name}：追加処理に失敗しました。`
+                        );
+                    }
+                }
+
+                heroPhotoFiles.value = "";
+                await loadHeroPhotoList();
+
+                if (successCount > 0 && failedMessages.length === 0) {
+                    resultMessage.textContent =
+                        `TOP写真を${successCount}枚追加しました。`;
+                    return;
+                }
+
+                if (successCount > 0) {
+                    resultMessage.textContent =
+                        `${successCount}枚追加しました。一部失敗：${failedMessages.join(" / ")}`;
+                    return;
+                }
+
+                resultMessage.textContent =
+                    `TOP写真追加に失敗しました：${failedMessages.join(" / ")}`;
+
+            } finally {
+                heroPhotoUploadButton.disabled = false;
+                heroPhotoUploadButton.textContent = "TOP写真を追加";
+            }
+        }
+
+        async function deleteHeroPhoto(id) {
+            const key = adminKey.value.trim();
+
+            if (!key) {
+                resultMessage.textContent = "管理用パスキーを入力してください。";
+                return;
+            }
+
+            if (!confirm("このTOP写真を削除しますか？")) {
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/admin_site_hero_photos", {
+                    method: "DELETE",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        key,
+                        id
+                    })
+                });
+
+                const data = await response.json();
+
+                resultMessage.textContent =
+                    data.message || "処理が完了しました。";
+
+                if (response.ok && data.ok) {
+                    await loadHeroPhotoList();
+                }
+
+            } catch (error) {
+                resultMessage.textContent =
+                    "TOP写真削除に失敗しました。";
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = () => {
+                    const result = String(reader.result);
+                    resolve(result.split(",")[1] || "");
+                };
+
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function compressImage(file) {
+            if (file.size <= 8 * 1024 * 1024) {
+                return file;
+            }
+
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                const reader = new FileReader();
+
+                reader.onload = event => {
+                    image.onload = () => {
+                        let width = image.width;
+                        let height = image.height;
+                        const maxSize = 1600;
+
+                        if (width > height && width > maxSize) {
+                            height = Math.round(height * maxSize / width);
+                            width = maxSize;
+                        }
+
+                        if (height >= width && height > maxSize) {
+                            width = Math.round(width * maxSize / height);
+                            height = maxSize;
+                        }
+
+                        const canvas = document.createElement("canvas");
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(image, 0, 0, width, height);
+
+                        let quality = 0.9;
+
+                        const createBlob = () => {
+                            canvas.toBlob(blob => {
+                                if (!blob) {
+                                    reject(new Error("圧縮失敗"));
+                                    return;
+                                }
+
+                                if (blob.size <= 8 * 1024 * 1024 || quality < 0.4) {
+                                    resolve(
+                                        new File([blob], file.name, {
+                                            type: "image/jpeg"
+                                        })
+                                    );
+                                    return;
+                                }
+
+                                quality -= 0.1;
+                                createBlob();
+
+                            }, "image/jpeg", quality);
+                        };
+
+                        createBlob();
+                    };
+
+                    image.onerror = reject;
+                    image.src = event.target.result;
+                };
+
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function sleep(milliseconds) {
+            return new Promise(resolve => {
+                setTimeout(resolve, milliseconds);
+            });
+        }
+    </script>
 
 </body>
+
 </html>

@@ -12,8 +12,8 @@
 
     <div class="card">
 
-        <div class="site-hero-image">
-            <img src="/images/site-hero.jpg" alt="送別会">
+        <div id="siteHeroSlider" class="site-hero-slider">
+            <div id="siteHeroTrack" class="site-hero-track"></div>
         </div>
 
         <h1>第３部送別記念サイト</h1>
@@ -73,6 +73,78 @@
 
     <script>
 
+        async function loadHeroPhotos() {
+            const slider = document.getElementById("siteHeroSlider");
+            const track = document.getElementById("siteHeroTrack");
+
+            try {
+                const response = await fetch("/api/site_hero_photos");
+                const data = await response.json();
+
+                if (!data.ok || !data.photos || data.photos.length === 0) {
+                    renderHeroFallback(slider, track);
+                    return;
+                }
+
+                renderHeroSlider(slider, track, data.photos);
+
+            } catch (error) {
+                renderHeroFallback(slider, track);
+            }
+        }
+
+        function renderHeroFallback(slider, track) {
+            slider.classList.add("is-static");
+            track.innerHTML = "";
+
+            const image = document.createElement("img");
+            image.className = "site-hero-photo";
+            image.src = "/images/site-hero.jpg";
+            image.alt = "送別会";
+
+            track.appendChild(image);
+        }
+
+        function renderHeroSlider(slider, track, photos) {
+            slider.classList.remove("is-static");
+            track.innerHTML = "";
+
+            const safePhotos =
+                photos.filter(photo =>
+                    /^https:\/\/[^\s"'<>]+$/i.test(String(photo.image_url || ""))
+                );
+
+            if (safePhotos.length === 0) {
+                renderHeroFallback(slider, track);
+                return;
+            }
+
+            if (safePhotos.length === 1) {
+                slider.classList.add("is-static");
+
+                const image = createHeroImage(safePhotos[0]);
+                track.appendChild(image);
+                return;
+            }
+
+            const loopPhotos =
+                safePhotos.concat(safePhotos);
+
+            loopPhotos.forEach(photo => {
+                const image = createHeroImage(photo);
+                track.appendChild(image);
+            });
+        }
+
+        function createHeroImage(photo) {
+            const image = document.createElement("img");
+            image.className = "site-hero-photo";
+            image.src = photo.image_url;
+            image.alt = "送別会写真";
+            image.loading = "eager";
+            return image;
+        }
+
         async function loadSiteNotice() {
             const venueNotice = document.getElementById("venueNotice");
             const venueNoticeTitle = document.getElementById("venueNoticeTitle");
@@ -84,7 +156,7 @@
             const venueAddress = document.getElementById("venueAddress");
             const venueNoticeText = document.getElementById("venueNoticeText");
             const venueMapLink = document.getElementById("venueMapLink");
-            
+
 
             try {
                 const response = await fetch("/api/site_notice");
@@ -284,6 +356,7 @@
 
         }
 
+        loadHeroPhotos();
         loadSiteNotice();
         loadRecipients();
 
