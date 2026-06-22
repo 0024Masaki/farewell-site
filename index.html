@@ -437,6 +437,11 @@
                 siteTitle.textContent = notice.site_title || "第３部送別記念サイト";
                 siteSubtitle.textContent = notice.site_subtitle || "皆様からの写真やメッセージをお待ちしております";
 
+                if (!notice.is_visible) {
+                    venueNotice.hidden = true;
+                    return;
+                }
+
                 venueNoticeTitle.textContent =
                     notice.notice_title || "宴会場のお知らせ";
 
