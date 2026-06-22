@@ -1,3 +1,5 @@
+const MAX_PHOTO_BASE64_LENGTH = 3 * 1024 * 1024;
+
 export async function onRequestPost(context) {
     try {
         const adminKey = context.env.ADMIN_KEY || "";
@@ -27,6 +29,10 @@ export async function onRequestPost(context) {
 
         if (!base64) {
             return jsonResponse({ ok: false, message: "画像データが空です。" }, 400);
+        }
+
+        if (base64.length > MAX_PHOTO_BASE64_LENGTH) {
+            return jsonResponse({ ok: false, message: "画像データが大きすぎます。小さい画像を選択してください。" }, 413);
         }
 
         const response = await fetch(uploadUrl, {

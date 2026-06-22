@@ -1,3 +1,5 @@
+const MAX_PHOTO_BASE64_LENGTH = 3 * 1024 * 1024;
+
 export async function onRequest(context) {
     if (context.request.method !== "POST") {
         return jsonResponse({ ok: false, message: "POSTのみ対応しています。" }, 405);
@@ -27,6 +29,10 @@ export async function onRequest(context) {
 
         if (!payload.base64) {
             return jsonResponse({ ok: false, message: "写真データがありません。" }, 400);
+        }
+
+        if (payload.base64.length > MAX_PHOTO_BASE64_LENGTH) {
+            return jsonResponse({ ok: false, message: "写真データが大きすぎます。小さい写真を選択してください。" }, 413);
         }
 
         if (!/^image\/(jpeg|png|webp)$/.test(payload.mimeType)) {
