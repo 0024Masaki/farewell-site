@@ -1651,3 +1651,60 @@ footer a:hover{
         aspect-ratio:1 / 1;
     }
 }
+
+/* 管理画面ステータストースト */
+.admin-status-toast{
+    position:fixed;
+    top:22px;
+    right:22px;
+    z-index:30000;
+    max-width:min(420px, calc(100vw - 32px));
+    padding:14px 18px;
+    border-radius:16px;
+    color:#f8fafc;
+    font-weight:700;
+    line-height:1.6;
+    text-align:left;
+    border:1px solid rgba(255,255,255,.18);
+    box-shadow:0 18px 44px rgba(0,0,0,.38);
+    backdrop-filter:blur(14px);
+    animation:adminStatusToastIn .18s ease-out;
+    pointer-events:none;
+}
+
+.admin-status-toast[hidden]{
+    display:none;
+}
+
+.admin-status-toast.is-info{
+    background:rgba(30,41,59,.92);
+}
+
+.admin-status-toast.is-success{
+    background:linear-gradient(135deg, rgba(34,197,94,.92), rgba(14,165,233,.9));
+}
+
+.admin-status-toast.is-error{
+    background:linear-gradient(135deg, rgba(239,68,68,.94), rgba(190,18,60,.92));
+}
+
+@keyframes adminStatusToastIn{
+    from{
+        opacity:0;
+        transform:translateY(-8px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@media (max-width:600px){
+    .admin-status-toast{
+        top:12px;
+        left:12px;
+        right:12px;
+        max-width:none;
+    }
+}
