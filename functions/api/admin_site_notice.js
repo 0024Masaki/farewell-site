@@ -42,6 +42,8 @@ export async function onRequest(context) {
             await db.prepare(`
                 UPDATE site_notice
                 SET
+                    site_title = ?,
+                    site_subtitle = ?,
                     notice_title = ?,
                     event_datetime = ?,
                     venue_name = ?,
@@ -53,16 +55,18 @@ export async function onRequest(context) {
                     updated_at = ?
                 WHERE id = ?
             `).bind(
-                notice.notice_title,
-                notice.event_datetime,
-                notice.venue_name,
-                notice.venue_address,
-                notice.map_url,
-                notice.route_url,
-                notice.notice_text,
-                notice.is_visible,
-                new Date().toISOString(),
-                "main"
+                    notice.site_title,
+                    notice.site_subtitle,
+                    notice.notice_title,
+                    notice.event_datetime,
+                    notice.venue_name,
+                    notice.venue_address,
+                    notice.map_url,
+                    notice.route_url,
+                    notice.notice_text,
+                    notice.is_visible,
+                    new Date().toISOString(),
+                    "main"
             ).run();
 
             return jsonResponse({
@@ -89,6 +93,8 @@ async function ensureNoticeRow(db) {
     await db.prepare(`
         INSERT OR IGNORE INTO site_notice (
             id,
+            site_title,
+            site_subtitle,
             notice_title,
             event_datetime,
             venue_name,
@@ -102,6 +108,8 @@ async function ensureNoticeRow(db) {
         VALUES (
             ?,
             ?,
+            ?,
+            ?,
             '',
             '',
             '',
@@ -113,6 +121,8 @@ async function ensureNoticeRow(db) {
         )
     `).bind(
         "main",
+        "第３部送別記念サイト",
+        "皆様からの写真やメッセージをお待ちしております",
         "宴会場のお知らせ",
         new Date().toISOString()
     ).run();
@@ -121,6 +131,8 @@ async function ensureNoticeRow(db) {
 async function getNotice(db) {
     return await db.prepare(`
         SELECT
+            site_title,
+            site_subtitle,
             notice_title,
             event_datetime,
             venue_name,
@@ -138,6 +150,14 @@ async function getNotice(db) {
 
 function buildNotice(data) {
     return {
+        site_title: sanitizeText(
+            data.site_title || "第３部送別記念サイト",
+            80
+        ),
+        site_subtitle: sanitizeText(
+            data.site_subtitle || "皆様からの写真やメッセージをお待ちしております",
+            160
+        ),
         notice_title: sanitizeText(data.notice_title || "宴会場のお知らせ", 80),
         event_datetime: sanitizeText(data.event_datetime || "", 120),
         venue_name: sanitizeText(data.venue_name || "", 120),

@@ -16,9 +16,9 @@
             <div id="siteHeroTrack" class="site-hero-track"></div>
         </div>
 
-        <h1>第３部送別記念サイト</h1>
+        <h1 id="siteTitle">第３部送別記念サイト</h1>
 
-        <p class="subtitle">
+        <p id="siteSubtitle" class="subtitle">
             皆様からの写真やメッセージをお待ちしております
         </p>
         <section id="venueNotice" class="venue-notice" hidden>
@@ -409,6 +409,8 @@
         }
 
         async function loadSiteNotice() {
+            const siteTitle = document.getElementById("siteTitle");
+            const siteSubtitle = document.getElementById("siteSubtitle");
             const venueNotice = document.getElementById("venueNotice");
             const venueNoticeTitle = document.getElementById("venueNoticeTitle");
             const venueDateRow = document.getElementById("venueDateRow");
@@ -431,6 +433,9 @@
                 }
 
                 const notice = data.notice;
+
+                siteTitle.textContent = notice.site_title || "第３部送別記念サイト";
+                siteSubtitle.textContent = notice.site_subtitle || "皆様からの写真やメッセージをお待ちしております";
 
                 venueNoticeTitle.textContent =
                     notice.notice_title || "宴会場のお知らせ";

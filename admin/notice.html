@@ -37,6 +37,16 @@
 
         <div id="noticePanel" class="form-area" hidden>
 
+            <label class="form-label" for="siteTitle">
+                TOPタイトル
+            </label>
+            <input id="siteTitle" class="input" maxlength="80" placeholder="例：第３部送別記念サイト">
+
+            <label class="form-label" for="siteSubtitle">
+                TOPサブタイトル
+            </label>
+            <input id="siteSubtitle" class="input" maxlength="160" placeholder="例：皆様からの写真やメッセージをお待ちしております">
+
             <label class="form-label">
                 <input id="isVisible" type="checkbox" checked>
                 トップページに表示する
@@ -105,6 +115,8 @@
         const noticePanel = document.getElementById("noticePanel");
 
         const isVisible = document.getElementById("isVisible");
+        const siteTitle = document.getElementById("siteTitle");
+        const siteSubtitle = document.getElementById("siteSubtitle");
         const noticeTitle = document.getElementById("noticeTitle");
         const eventDatetime = document.getElementById("eventDatetime");
         const venueName = document.getElementById("venueName");
@@ -198,6 +210,8 @@
                     },
                     body: JSON.stringify({
                         key: key,
+                        site_title: siteTitle.value,
+                        site_subtitle: siteSubtitle.value,
                         is_visible: isVisible.checked,
                         notice_title: noticeTitle.value,
                         event_datetime: eventDatetime.value,
@@ -226,6 +240,8 @@
         }
 
         function setForm(notice) {
+            siteTitle.value = notice.site_title || "第３部送別記念サイト";
+            siteSubtitle.value = notice.site_subtitle || "皆様からの写真やメッセージをお待ちしております";
             isVisible.checked = Boolean(notice.is_visible);
             noticeTitle.value = notice.notice_title || "宴会場のお知らせ";
             eventDatetime.value = notice.event_datetime || "";

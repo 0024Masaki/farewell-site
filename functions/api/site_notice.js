@@ -4,6 +4,8 @@ export async function onRequestGet(context) {
 
         const notice = await db.prepare(`
             SELECT
+                site_title,
+                site_subtitle,
                 notice_title,
                 event_datetime,
                 venue_name,
@@ -18,10 +20,21 @@ export async function onRequestGet(context) {
             LIMIT 1
         `).bind("main").first();
 
-        if (!notice || !notice.is_visible) {
+        if (!notice) {
             return jsonResponse({
                 ok: true,
-                notice: null
+                notice: {
+                    site_title: "第３部送別記念サイト",
+                    site_subtitle: "皆様からの写真やメッセージをお待ちしております",
+                    notice_title: "宴会場のお知らせ",
+                    event_datetime: "",
+                    venue_name: "",
+                    venue_address: "",
+                    map_url: "",
+                    route_url: "",
+                    notice_text: "",
+                    is_visible: 0
+                }
             });
         }
 
