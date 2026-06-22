@@ -13,6 +13,7 @@
     <div class="card wide-card">
 
         <h1>お知らせ・会場管理</h1>
+        <div id="adminStatusToast" class="admin-status-toast" hidden></div>
 
         <input id="adminKey" class="input" type="password" placeholder="管理用パスキー">
 
@@ -116,6 +117,8 @@
     <script>
         const adminKey = document.getElementById("adminKey");
         const resultMessage = document.getElementById("resultMessage");
+        const adminStatusToast = document.getElementById("adminStatusToast");
+        let adminStatusToastTimerId = null;
         const noticePanel = document.getElementById("noticePanel");
 
         const isVisible = document.getElementById("isVisible");
@@ -730,6 +733,57 @@
                 setTimeout(resolve, milliseconds);
             });
         }
+
+        function showAdminStatusToast(message) {
+            const text = String(message || "").trim();
+
+            if (!text) {
+                return;
+            }
+
+            adminStatusToast.textContent = text;
+            adminStatusToast.className = "admin-status-toast";
+
+            if (
+                text.includes("失敗") ||
+                text.includes("エラー") ||
+                text.includes("できません") ||
+                text.includes("入力してください")
+            ) {
+                adminStatusToast.classList.add("is-error");
+            } else if (
+                text.includes("保存") ||
+                text.includes("追加") ||
+                text.includes("削除") ||
+                text.includes("読み込みました") ||
+                text.includes("完了")
+            ) {
+                adminStatusToast.classList.add("is-success");
+            } else {
+                adminStatusToast.classList.add("is-info");
+            }
+
+            adminStatusToast.hidden = false;
+
+            if (adminStatusToastTimerId) {
+                clearTimeout(adminStatusToastTimerId);
+            }
+
+            adminStatusToastTimerId = setTimeout(() => {
+                adminStatusToast.hidden = true;
+            }, 4200);
+        }
+
+        const resultMessageObserver =
+            new MutationObserver(() => {
+                showAdminStatusToast(resultMessage.textContent);
+            });
+
+        resultMessageObserver.observe(resultMessage, {
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
     </script>
 
 </body>
