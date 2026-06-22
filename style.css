@@ -1584,3 +1584,70 @@ footer a:hover{
         height:230px;
     }
 }
+
+/* TOP写真管理を3列サムネイル表示にする */
+.hero-photo-admin-list{
+    display:grid !important;
+    grid-template-columns:repeat(3, minmax(0, 1fr)) !important;
+    gap:14px !important;
+}
+
+.hero-photo-admin-card{
+    display:flex !important;
+    flex-direction:column;
+    gap:10px;
+    align-items:stretch;
+    padding:12px;
+    text-align:center;
+}
+
+.hero-photo-admin-card img{
+    width:100% !important;
+    height:auto !important;
+    aspect-ratio:4 / 3;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+.hero-photo-admin-info{
+    display:grid;
+    gap:8px;
+    color:var(--text-soft);
+    font-size:13px;
+}
+
+.hero-photo-sort-label{
+    display:grid;
+    gap:6px;
+    text-align:left;
+    color:var(--text-soft);
+    font-size:13px;
+}
+
+.hero-photo-sort-input{
+    width:100%;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:rgba(15,23,42,.86);
+    color:var(--text);
+    font-size:15px;
+}
+
+.hero-photo-admin-card .button{
+    width:100%;
+    min-width:0;
+    margin:0;
+    padding:11px;
+    font-size:14px;
+}
+
+@media (max-width:600px){
+    .hero-photo-admin-list{
+        grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .hero-photo-admin-card img{
+        aspect-ratio:1 / 1;
+    }
+}

@@ -60,6 +60,19 @@ export async function onRequest(context) {
             return await deleteHeroPhoto(context, db, data);
         }
 
+        if (method === "PUT") {
+            const data = await context.request.json();
+
+            if (!isValidAdminKey(data.key, adminKey)) {
+                return jsonResponse({
+                    ok: false,
+                    message: "認証エラー"
+                }, 403);
+            }
+
+            return await updateHeroPhotoSortOrders(db, data);
+        }
+
         return jsonResponse({
             ok: false,
             message: "未対応のメソッドです。"
@@ -245,6 +258,81 @@ async function deleteHeroPhoto(context, db, data) {
     return jsonResponse({
         ok: true,
         message: "TOP写真を削除しました。"
+    });
+}
+
+async function updateHeroPhotoSortOrders(db, data) {
+    const orders =
+        Array.isArray(data.orders)
+            ? data.orders
+            : [];
+
+    if (orders.length === 0) {
+        return jsonResponse({
+            ok: false,
+            message: "表示順データがありません。"
+        }, 400);
+    }
+
+    const usedIds = new Set();
+    const usedSortOrders = new Set();
+    const cleanedOrders = [];
+
+    for (const item of orders) {
+        const id = Number(item.id);
+        const sortOrder = Number(item.sort_order);
+
+        if (!Number.isInteger(id) || id < 1) {
+            return jsonResponse({
+                ok: false,
+                message: "写真IDが正しくありません。"
+            }, 400);
+        }
+
+        if (!Number.isInteger(sortOrder) || sortOrder < 1) {
+            return jsonResponse({
+                ok: false,
+                message: "表示順は1以上の整数で入力してください。"
+            }, 400);
+        }
+
+        if (usedIds.has(id)) {
+            return jsonResponse({
+                ok: false,
+                message: "同じ写真IDが重複しています。"
+            }, 400);
+        }
+
+        if (usedSortOrders.has(sortOrder)) {
+            return jsonResponse({
+                ok: false,
+                message: `表示順 ${sortOrder} が重複しています。`
+            }, 400);
+        }
+
+        usedIds.add(id);
+        usedSortOrders.add(sortOrder);
+
+        cleanedOrders.push({
+            id,
+            sortOrder
+        });
+    }
+
+    for (const item of cleanedOrders) {
+        await db.prepare(`
+            UPDATE site_hero_photos
+            SET sort_order = ?
+            WHERE id = ?
+        `).bind(
+            item.sortOrder,
+            item.id
+        ).run();
+    }
+
+    return jsonResponse({
+        ok: true,
+        message: "TOP写真の表示順を保存しました。"
     });
 }
 

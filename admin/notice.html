@@ -29,6 +29,10 @@
                 TOP写真を追加
             </button>
 
+            <button id="heroPhotoSortSaveButton" class="button button-secondary" type="button">
+                表示順を保存
+            </button>
+
             <div id="heroPhotoList" class="hero-photo-admin-list">
             </div>
         </section>
@@ -126,6 +130,7 @@
 
         const heroPhotoFiles = document.getElementById("heroPhotoFiles");
         const heroPhotoUploadButton = document.getElementById("heroPhotoUploadButton");
+        const heroPhotoSortSaveButton = document.getElementById("heroPhotoSortSaveButton");
         const heroPhotoList = document.getElementById("heroPhotoList");
         const maxHeroUploadFiles = 20;
         const maxOriginalPhotoBytes = 30 * 1024 * 1024;
@@ -137,6 +142,7 @@
         document.getElementById("saveButton").addEventListener("click", saveNotice);
         document.getElementById("reloadButton").addEventListener("click", loadNotice);
         heroPhotoUploadButton.addEventListener("click", uploadHeroPhotos);
+        heroPhotoSortSaveButton.addEventListener("click", saveHeroPhotoSort);
         adminKey.addEventListener("change", loadNotice);
 
         const savedKey = sessionStorage.getItem("adminKey");
@@ -300,7 +306,21 @@
 
                     const info = document.createElement("div");
                     info.className = "hero-photo-admin-info";
-                    info.textContent = `表示順：${photo.sort_order}`;
+
+                    const sortLabel = document.createElement("label");
+                    sortLabel.className = "hero-photo-sort-label";
+                    sortLabel.textContent = "表示順";
+
+                    const sortInput = document.createElement("input");
+                    sortInput.className = "hero-photo-sort-input";
+                    sortInput.type = "number";
+                    sortInput.min = "1";
+                    sortInput.step = "1";
+                    sortInput.value = photo.sort_order || "";
+                    sortInput.dataset.photoId = photo.id;
+
+                    sortLabel.appendChild(sortInput);
+                    info.appendChild(sortLabel);
 
                     const deleteButton = document.createElement("button");
                     deleteButton.className = "button danger-button";
@@ -463,6 +483,85 @@
             } catch (error) {
                 resultMessage.textContent =
                     "TOP写真削除に失敗しました。";
+            }
+        }
+
+        async function saveHeroPhotoSortOrders() {
+            const key = adminKey.value.trim();
+
+            if (!key) {
+                resultMessage.textContent = "管理用パスキーを入力してください。";
+                return;
+            }
+
+            const inputs =
+                [...document.querySelectorAll(".hero-photo-sort-input")];
+
+            if (inputs.length === 0) {
+                resultMessage.textContent = "保存するTOP写真がありません。";
+                return;
+            }
+
+            const orders = [];
+            const usedSortOrders = new Set();
+
+            for (const input of inputs) {
+                const id = Number(input.dataset.photoId);
+                const sortOrder = Number(input.value);
+
+                if (!Number.isInteger(id) || id < 1) {
+                    resultMessage.textContent = "写真IDが正しくありません。";
+                    return;
+                }
+
+                if (!Number.isInteger(sortOrder) || sortOrder < 1) {
+                    resultMessage.textContent = "表示順は1以上の整数で入力してください。";
+                    return;
+                }
+
+                if (usedSortOrders.has(sortOrder)) {
+                    resultMessage.textContent = `表示順 ${sortOrder} が重複しています。`;
+                    return;
+                }
+
+                usedSortOrders.add(sortOrder);
+
+                orders.push({
+                    id,
+                    sort_order: sortOrder
+                });
+            }
+
+            resultMessage.textContent = "表示順を保存中です...";
+
+            try {
+                const response = await fetch("/api/admin_site_hero_photos", {
+                    method: "PUT",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        key,
+                        orders
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.ok) {
+                    resultMessage.textContent =
+                        data.message || "表示順の保存に失敗しました。";
+                    return;
+                }
+
+                resultMessage.textContent =
+                    data.message || "表示順を保存しました。";
+
+                await loadHeroPhotoList();
+
+            } catch (error) {
+                resultMessage.textContent =
+                    "表示順の保存に失敗しました。";
             }
         }
 
