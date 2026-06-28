@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>みんなの投稿まとめ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="card wide-card summary-card">
+
+    <h1>みんなの投稿まとめ</h1>
+
+    <p class="subtitle">
+        紹介者ごとに投稿写真とメッセージをまとめて表示します
+    </p>
+
+    <p id="resultMessage" class="result-message">読み込み中...</p>
+
+    <div id="summaryToolbar" class="summary-toolbar" hidden>
+        <button id="photoListButton" class="button" type="button">
+            写真一覧
+        </button>
+
+        <button id="messageListButton" class="button button-secondary" type="button">
+            メッセージ一覧
+        </button>
+
+        <button id="pdfMenuButton" class="button button-submit" type="button">
+            PDF出力
+        </button>
+    </div>
+
+    <div id="pdfOptionPanel" class="summary-pdf-options" hidden>
+        <p class="summary-option-title">
+            出力内容を選択してください
+        </p>
+
+        <div class="summary-option-grid">
+            <button id="printPhotosButton" class="button" type="button">
+                写真のみ
+            </button>
+
+            <button id="printMessagesButton" class="button button-secondary" type="button">
+                メッセージのみ
+            </button>
+
+            <button id="printAllButton" class="button button-submit" type="button">
+                すべて
+            </button>
+
+            <button id="cancelPdfButton" class="button button-secondary" type="button">
+                キャンセル
+            </button>
+        </div>
+    </div>
+
+    <section id="photoPanel" class="summary-panel summary-photo-panel"></section>
+    <section id="messagePanel" class="summary-panel summary-message-panel is-hidden"></section>
+
+    <a class="button button-secondary summary-back-button" href="index.html">
+        トップへ戻る
+    </a>
+
+</div>
+
+<script>
+const resultMessage = document.getElementById("resultMessage");
+const summaryToolbar = document.getElementById("summaryToolbar");
+const photoListButton = document.getElementById("photoListButton");
+const messageListButton = document.getElementById("messageListButton");
+const pdfMenuButton = document.getElementById("pdfMenuButton");
+const pdfOptionPanel = document.getElementById("pdfOptionPanel");
+const printPhotosButton = document.getElementById("printPhotosButton");
+const printMessagesButton = document.getElementById("printMessagesButton");
+const printAllButton = document.getElementById("printAllButton");
+const cancelPdfButton = document.getElementById("cancelPdfButton");
+const photoPanel = document.getElementById("photoPanel");
+const messagePanel = document.getElementById("messagePanel");
+
+let summaryData = null;
+let summarySettings = null;
+
+photoListButton.addEventListener("click", () => {
+    showSummaryMode("photos");
+});
+
+messageListButton.addEventListener("click", () => {
+    showSummaryMode("messages");
+});
+
+pdfMenuButton.addEventListener("click", () => {
+    pdfOptionPanel.hidden = !pdfOptionPanel.hidden;
+});
+
+cancelPdfButton.addEventListener("click", () => {
+    pdfOptionPanel.hidden = true;
+});
+
+printPhotosButton.addEventListener("click", () => {
+    printSummary("photos");
+});
+
+printMessagesButton.addEventListener("click", () => {
+    printSummary("messages");
+});
+
+printAllButton.addEventListener("click", () => {
+    printSummary("all");
+});
+
+window.addEventListener("afterprint", clearPrintMode);
+
+loadSummary();
+
+async function loadSummary() {
+    try {
+        const response = await fetch(`/api/summary?t=${Date.now()}`, {
+            cache: "no-store"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.ok) {
+            resultMessage.textContent = data.message || "まとめ情報を取得できませんでした。";
+            return;
+        }
+
+        summaryData = data;
+        summarySettings = data.settings || {};
+
+        if (!summarySettings.summary_enabled) {
+            resultMessage.textContent = data.message || "まとめページは現在表示されていません。";
+            return;
+        }
+
+        renderToolbar(summarySettings);
+        renderPhotoPanel(data.recipients || []);
+        renderMessagePanel(data.recipients || []);
+
+        if ((data.recipients || []).length === 0) {
+            resultMessage.textContent = "表示できる紹介者がありません。";
+            return;
+        }
+
+        summaryToolbar.hidden = false;
+        resultMessage.textContent = `${data.recipients.length}名分の投稿を表示できます。`;
+
+        if (summarySettings.show_photo_list) {
+            showSummaryMode("photos");
+            return;
+        }
+
+        if (summarySettings.show_message_list) {
+            showSummaryMode("messages");
+            return;
+        }
+
+        resultMessage.textContent = "写真一覧とメッセージ一覧がどちらも非表示に設定されています。";
+
+    } catch (error) {
+        resultMessage.textContent = "通信エラーが発生しました。";
+    }
+}
+
+function renderToolbar(settings) {
+    photoListButton.hidden = !settings.show_photo_list;
+    messageListButton.hidden = !settings.show_message_list;
+    pdfMenuButton.hidden = !settings.show_pdf_button;
+
+    printPhotosButton.hidden = !settings.show_photo_list;
+    printMessagesButton.hidden = !settings.show_message_list;
+
+    if (!settings.show_photo_list && !settings.show_message_list) {
+        printAllButton.hidden = true;
+    }
+}
+
+function showSummaryMode(mode) {
+    if (mode === "photos") {
+        photoPanel.classList.remove("is-hidden");
+        messagePanel.classList.add("is-hidden");
+        photoListButton.classList.remove("button-secondary");
+        messageListButton.classList.add("button-secondary");
+        pdfOptionPanel.hidden = true;
+        return;
+    }
+
+    photoPanel.classList.add("is-hidden");
+    messagePanel.classList.remove("is-hidden");
+    photoListButton.classList.add("button-secondary");
+    messageListButton.classList.remove("button-secondary");
+    pdfOptionPanel.hidden = true;
+}
+
+function renderPhotoPanel(recipients) {
+    photoPanel.innerHTML = "";
+
+    recipients.forEach(recipient => {
+        const section = document.createElement("article");
+        section.className = "summary-recipient-section";
+
+        section.appendChild(createRecipientHeader(recipient));
+
+        const photos = recipient.photos || [];
+
+        if (photos.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "summary-empty-text";
+            empty.textContent = "投稿写真はまだありません。";
+            section.appendChild(empty);
+            photoPanel.appendChild(section);
+            return;
+        }
+
+        const grid = document.createElement("div");
+        grid.className = "summary-photo-grid";
+
+        photos.forEach(photo => {
+            const card = document.createElement("div");
+            card.className = "summary-photo-card";
+
+            const image = document.createElement("img");
+            image.src = buildDriveThumbnailUrl(photo.drive_file_id, 900);
+            image.alt = "投稿写真";
+            image.loading = "lazy";
+            image.decoding = "async";
+
+            const info = document.createElement("div");
+            info.className = "summary-photo-info";
+
+            const name = document.createElement("div");
+            name.className = "summary-photo-name";
+            name.textContent = photo.name || "匿名";
+
+            const comment = document.createElement("div");
+            comment.className = "summary-photo-comment";
+            comment.textContent = photo.comment || "";
+
+            const date = document.createElement("div");
+            date.className = "summary-photo-date";
+            date.textContent = formatDate(photo.created_at);
+
+            info.appendChild(name);
+            info.appendChild(comment);
+            info.appendChild(date);
+
+            card.appendChild(image);
+            card.appendChild(info);
+            grid.appendChild(card);
+        });
+
+        section.appendChild(grid);
+        photoPanel.appendChild(section);
+    });
+}
+
+function renderMessagePanel(recipients) {
+    messagePanel.innerHTML = "";
+
+    recipients.forEach(recipient => {
+        const section = document.createElement("article");
+        section.className = "summary-recipient-section";
+
+        section.appendChild(createRecipientHeader(recipient));
+
+        const messages = recipient.messages || [];
+
+        if (messages.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "summary-empty-text";
+            empty.textContent = "メッセージはまだありません。";
+            section.appendChild(empty);
+            messagePanel.appendChild(section);
+            return;
+        }
+
+        const list = document.createElement("div");
+        list.className = "summary-message-list";
+
+        messages.forEach(message => {
+            const card = document.createElement("div");
+            card.className = "summary-message-card";
+
+            const name = document.createElement("div");
+            name.className = "summary-message-name";
+            name.textContent = message.name || "匿名";
+
+            const text = document.createElement("div");
+            text.className = "summary-message-text";
+            text.textContent = message.message || "";
+
+            const date = document.createElement("div");
+            date.className = "summary-message-date";
+            date.textContent = formatDate(message.created_at);
+
+            card.appendChild(name);
+            card.appendChild(text);
+            card.appendChild(date);
+            list.appendChild(card);
+        });
+
+        section.appendChild(list);
+        messagePanel.appendChild(section);
+    });
+}
+
+function createRecipientHeader(recipient) {
+    const header = document.createElement("header");
+    header.className = "summary-recipient-header";
+
+    const avatar = document.createElement("div");
+    avatar.className = "summary-recipient-avatar";
+
+    if (isSafeImageUrl(recipient.photo_url)) {
+        const image = document.createElement("img");
+        image.src = recipient.photo_url;
+        image.alt = recipient.name || "紹介者";
+        avatar.appendChild(image);
+    } else {
+        avatar.textContent = String(recipient.name || "紹").trim().slice(0, 1) || "紹";
+    }
+
+    const text = document.createElement("div");
+    text.className = "summary-recipient-title-area";
+
+    const name = document.createElement("h2");
+    name.textContent = recipient.name || "";
+
+    const title = document.createElement("p");
+    title.textContent = recipient.title || "";
+
+    text.appendChild(name);
+    text.appendChild(title);
+    header.appendChild(avatar);
+    header.appendChild(text);
+
+    return header;
+}
+
+async function printSummary(mode) {
+    if (!summarySettings) {
+        return;
+    }
+
+    if (mode === "photos" && !summarySettings.show_photo_list) {
+        resultMessage.textContent = "写真一覧は非表示に設定されています。";
+        return;
+    }
+
+    if (mode === "messages" && !summarySettings.show_message_list) {
+        resultMessage.textContent = "メッセージ一覧は非表示に設定されています。";
+        return;
+    }
+
+    pdfOptionPanel.hidden = true;
+    clearPrintMode();
+
+    document.body.classList.add("summary-printing");
+    document.body.classList.add(`summary-print-${mode}`);
+
+    if (mode === "photos" || mode === "all") {
+        resultMessage.textContent = "写真の読み込みを確認しています...";
+        await waitForSummaryImages();
+    }
+
+    resultMessage.textContent = "印刷画面を開きます。保存先でPDF保存を選んでください。";
+
+    setTimeout(() => {
+        window.print();
+    }, 180);
+}
+
+function clearPrintMode() {
+    document.body.classList.remove(
+        "summary-printing",
+        "summary-print-photos",
+        "summary-print-messages",
+        "summary-print-all"
+    );
+}
+
+function waitForSummaryImages() {
+    const images = [...photoPanel.querySelectorAll("img")];
+
+    if (images.length === 0) {
+        return Promise.resolve();
+    }
+
+    return Promise.all(
+        images.map(image => {
+            image.loading = "eager";
+
+            if (image.complete) {
+                return Promise.resolve();
+            }
+
+            return new Promise(resolve => {
+                image.addEventListener("load", resolve, { once: true });
+                image.addEventListener("error", resolve, { once: true });
+            });
+        })
+    );
+}
+
+function buildDriveThumbnailUrl(fileId, size) {
+    return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w${size}`;
+}
+
+function isSafeImageUrl(url) {
+    return /^https:\/\/[^\s"'<>]+$/i.test(String(url || ""));
+}
+
+function formatDate(value) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value || "";
+    }
+
+    return date.toLocaleString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+</script>
+
+</body>
+</html>

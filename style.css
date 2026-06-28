@@ -1708,3 +1708,343 @@ footer a:hover{
         max-width:none;
     }
 }
+
+/* ===== 投稿まとめページ ===== */
+.summary-top-card{
+    border-color:rgba(56,189,248,.42);
+    background:
+        linear-gradient(180deg, rgba(14,165,233,.18), rgba(15,23,42,.92));
+}
+
+.summary-top-avatar{
+    background:
+        linear-gradient(135deg, rgba(245,158,11,.95), rgba(236,72,153,.95));
+}
+
+.summary-card{
+    text-align:left;
+}
+
+.summary-card > h1,
+.summary-card > .subtitle,
+.summary-card > .result-message{
+    text-align:center;
+}
+
+.summary-toolbar{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:12px;
+    margin:22px 0;
+}
+
+.summary-toolbar .button,
+.summary-option-grid .button,
+.summary-back-button{
+    margin:0;
+    text-align:center;
+}
+
+.summary-pdf-options{
+    margin:0 0 22px;
+    padding:18px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+}
+
+.summary-option-title{
+    margin-bottom:14px;
+    color:var(--text-soft);
+    text-align:center;
+    font-weight:bold;
+}
+
+.summary-option-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:10px;
+}
+
+.summary-panel{
+    margin-top:20px;
+}
+
+.summary-panel.is-hidden{
+    display:none;
+}
+
+.summary-recipient-section{
+    margin-top:24px;
+    padding:22px;
+    border-radius:22px;
+    border:1px solid var(--line);
+    background:
+        linear-gradient(180deg, rgba(30,41,59,.86), rgba(15,23,42,.9));
+    box-shadow:0 18px 42px rgba(0,0,0,.22);
+}
+
+.summary-recipient-header{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:16px;
+    align-items:center;
+    margin-bottom:18px;
+    text-align:left;
+}
+
+.summary-recipient-avatar{
+    width:86px;
+    height:86px;
+    border-radius:26px;
+    overflow:hidden;
+    display:grid;
+    place-items:center;
+    flex-shrink:0;
+    color:#fff;
+    font-size:30px;
+    font-weight:800;
+    background:
+        linear-gradient(135deg, rgba(56,189,248,.95), rgba(139,92,246,.95));
+    border:1px solid rgba(255,255,255,.22);
+}
+
+.summary-recipient-avatar img{
+    width:100%;
+    height:100%;
+    display:block;
+    object-fit:cover;
+}
+
+.summary-recipient-title-area h2{
+    margin:0 0 6px;
+}
+
+.summary-recipient-title-area p{
+    color:var(--text-soft);
+    line-height:1.6;
+}
+
+.summary-empty-text{
+    color:var(--text-muted);
+    text-align:center;
+    padding:18px;
+    border-radius:14px;
+    background:rgba(255,255,255,.035);
+}
+
+.summary-photo-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:14px;
+}
+
+.summary-photo-card,
+.summary-message-card{
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    overflow:hidden;
+}
+
+.summary-photo-card img{
+    width:100%;
+    aspect-ratio:1;
+    display:block;
+    object-fit:cover;
+    background:#020617;
+}
+
+.summary-photo-info{
+    padding:12px;
+}
+
+.summary-photo-name,
+.summary-message-name{
+    color:var(--text);
+    font-weight:bold;
+    text-align:center;
+}
+
+.summary-photo-comment,
+.summary-message-text{
+    margin-top:8px;
+    color:var(--text-soft);
+    line-height:1.6;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
+
+.summary-photo-date,
+.summary-message-date{
+    margin-top:8px;
+    color:var(--text-muted);
+    font-size:12px;
+    text-align:center;
+}
+
+.summary-message-list{
+    display:grid;
+    gap:12px;
+}
+
+.summary-message-card{
+    padding:16px;
+}
+
+.summary-setting-row{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    margin:14px 0;
+    padding:14px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--text-soft);
+    line-height:1.6;
+    cursor:pointer;
+}
+
+.summary-setting-row input{
+    margin-top:5px;
+    transform:scale(1.2);
+    accent-color:var(--accent);
+}
+
+@media (max-width:700px){
+    .summary-toolbar,
+    .summary-option-grid{
+        grid-template-columns:1fr;
+    }
+
+    .summary-photo-grid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+
+    .summary-recipient-header{
+        grid-template-columns:1fr;
+        text-align:center;
+    }
+
+    .summary-recipient-avatar{
+        margin:0 auto;
+    }
+}
+
+@media print{
+    .summary-toolbar,
+    .summary-pdf-options,
+    .summary-back-button,
+    footer,
+    .qr-section{
+        display:none !important;
+    }
+
+    .summary-card{
+        text-align:left;
+    }
+
+    .summary-card > h1,
+    .summary-card > .subtitle,
+    .summary-card > .result-message{
+        text-align:center;
+    }
+
+    .summary-panel{
+        display:block !important;
+        margin-top:0;
+    }
+
+    .summary-panel.is-hidden{
+        display:block !important;
+    }
+
+    body.summary-print-photos .summary-message-panel,
+    body.summary-print-messages .summary-photo-panel{
+        display:none !important;
+    }
+
+    body.summary-print-all .summary-photo-panel,
+    body.summary-print-all .summary-message-panel{
+        display:block !important;
+    }
+
+    .summary-recipient-section{
+        margin:0 0 10mm;
+        padding:0;
+        border:none;
+        background:#fff !important;
+        box-shadow:none;
+        break-after:page;
+        page-break-after:always;
+        break-inside:avoid;
+        page-break-inside:avoid;
+    }
+
+    .summary-recipient-section:last-child{
+        break-after:auto;
+        page-break-after:auto;
+    }
+
+    .summary-recipient-header{
+        margin-bottom:6mm;
+    }
+
+    .summary-recipient-avatar{
+        width:24mm;
+        height:24mm;
+        border-radius:8mm;
+        border:1px solid #ccc;
+        background:#fff !important;
+        color:#111 !important;
+    }
+
+    .summary-recipient-title-area h2,
+    .summary-recipient-title-area p,
+    .summary-photo-name,
+    .summary-photo-comment,
+    .summary-photo-date,
+    .summary-message-name,
+    .summary-message-text,
+    .summary-message-date,
+    .summary-empty-text{
+        color:#111 !important;
+    }
+
+    .summary-photo-grid{
+        grid-template-columns:repeat(2, 1fr);
+        gap:7mm;
+    }
+
+    .summary-photo-card,
+    .summary-message-card{
+        border:none;
+        background:#fff !important;
+        break-inside:avoid;
+        page-break-inside:avoid;
+    }
+
+    .summary-photo-card img{
+        aspect-ratio:auto;
+        max-height:82mm;
+        object-fit:contain;
+        background:#fff;
+    }
+
+    .summary-photo-info,
+    .summary-message-card{
+        padding:0;
+    }
+
+    .summary-photo-comment,
+    .summary-message-text{
+        font-size:10.5pt;
+        line-height:1.55;
+    }
+
+    .summary-message-list{
+        gap:5mm;
+    }
+}

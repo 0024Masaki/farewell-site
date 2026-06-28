@@ -582,6 +582,8 @@
                     }
                 );
 
+                await appendSummaryLink(list);
+
             } catch (error) {
 
                 list.innerHTML =
@@ -589,6 +591,53 @@
 
             }
 
+        }
+
+
+        async function appendSummaryLink(list) {
+            try {
+                const response = await fetch(`/api/summary?meta=1&t=${Date.now()}`, {
+                    cache: "no-store"
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.ok || !data.settings || !data.settings.summary_enabled) {
+                    return;
+                }
+
+                const card = document.createElement("div");
+                card.className = "recipient-card summary-top-card";
+
+                const avatar = document.createElement("div");
+                avatar.className = "recipient-avatar summary-top-avatar";
+                avatar.textContent = "集";
+
+                const content = document.createElement("div");
+                content.className = "recipient-content";
+
+                const title = document.createElement("h2");
+                title.textContent = "みんなの投稿まとめ";
+
+                const text = document.createElement("p");
+                text.textContent = "写真やメッセージを紹介者ごとにまとめて見られます。";
+
+                const link = document.createElement("a");
+                link.className = "button button-submit";
+                link.href = "summary.html";
+                link.textContent = "まとめページを見る";
+
+                content.appendChild(title);
+                content.appendChild(text);
+                card.appendChild(avatar);
+                card.appendChild(content);
+                card.appendChild(link);
+
+                list.appendChild(card);
+
+            } catch (error) {
+                // まとめページ設定の取得に失敗した場合はリンクを表示しない。
+            }
         }
 
 
