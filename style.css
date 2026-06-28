@@ -2303,3 +2303,11 @@ body.has-site-nav{
 .summary-option-grid button[hidden]{
     display:none !important;
 }
+
+/* ボタン内テキストを中央揃えにする */
+.button-center-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
