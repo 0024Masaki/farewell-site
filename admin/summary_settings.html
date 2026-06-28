@@ -1,214 +1,214 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>まとめページ設定</title>
-<link rel="stylesheet" href="../style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>まとめページ設定</title>
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
 
-<header class="site-nav site-nav-admin" data-site-nav>
-    <a class="site-nav-home" href="/index.html" aria-label="TOPへ戻る" title="TOPへ戻る"><span aria-hidden="true">⌂</span></a>
+    <header class="site-nav site-nav-admin" data-site-nav>
+        <a class="site-nav-home" href="/index.html" aria-label="TOPへ戻る" title="TOPへ戻る"><span
+                aria-hidden="true">⌂</span></a>
 
-    <button
-        class="site-nav-toggle"
-        type="button"
-        aria-controls="siteNavMenu"
-        aria-expanded="false"
-        data-site-nav-toggle>
-        <span class="site-nav-toggle-icon">☰</span>
-        <span class="site-nav-toggle-text">メニュー</span>
-    </button>
+        <button class="site-nav-toggle" type="button" aria-controls="siteNavMenu" aria-expanded="false"
+            data-site-nav-toggle>
+            <span class="site-nav-toggle-icon">☰</span>
+            <span class="site-nav-toggle-text">メニュー</span>
+        </button>
 
-    <nav id="siteNavMenu" class="site-nav-links" data-site-nav-menu>
-        <a href="/admin/index.html">管理者TOP</a>
-        <a href="/admin/summary_settings.html">まとめ設定</a>
-        <a href="/summary.html">投稿まとめ</a>
-        <a href="/index.html">サイトTOP</a>
-    </nav>
-</header>
+        <nav id="siteNavMenu" class="site-nav-links" data-site-nav-menu>
+            <a href="/admin/index.html">管理者TOP</a>
+            <a href="/admin/summary_settings.html">まとめ設定</a>
+            <a href="/summary.html">投稿まとめ</a>
+            <a href="/index.html">サイトTOP</a>
+        </nav>
+    </header>
 
 
-<div class="card wide-card">
+    <div class="card wide-card">
 
-    <h1>まとめページ設定</h1>
+        <h1>まとめページ設定</h1>
 
-    <input id="adminKey" class="input" type="password" placeholder="管理用パスキー">
+        <input id="adminKey" class="input" type="password" placeholder="管理用パスキー">
 
-    <p id="resultMessage" class="result-message"></p>
+        <p id="resultMessage" class="result-message"></p>
 
-    <div id="settingsPanel" class="form-area" hidden>
-        <label class="summary-setting-row">
-            <input id="summaryEnabled" type="checkbox">
-            <span>TOPページとメニューにまとめページへのリンクを表示する</span>
-        </label>
+        <div id="settingsPanel" class="form-area" hidden>
+            <label class="summary-setting-row">
+                <input id="summaryEnabled" type="checkbox">
+                <span>TOPページとメニューにまとめページへのリンクを表示する</span>
+            </label>
 
-        <label class="summary-setting-row">
-            <input id="showPhotoList" type="checkbox">
-            <span>まとめページで写真一覧ボタンを表示する</span>
-        </label>
+            <label class="summary-setting-row">
+                <input id="showPhotoList" type="checkbox">
+                <span>まとめページで写真一覧ボタンを表示する</span>
+            </label>
 
-        <label class="summary-setting-row">
-            <input id="showMessageList" type="checkbox">
-            <span>まとめページでメッセージ一覧ボタンを表示する</span>
-        </label>
+            <label class="summary-setting-row">
+                <input id="showMessageList" type="checkbox">
+                <span>まとめページでメッセージ一覧ボタンを表示する</span>
+            </label>
 
-        <label class="summary-setting-row">
-            <input id="showPdfButton" type="checkbox">
-            <span>PDF出力ボタンを表示する</span>
-        </label>
+            <label class="summary-setting-row">
+                <input id="showPdfButton" type="checkbox">
+                <span>PDF出力ボタンを表示する</span>
+            </label>
 
-        <label class="summary-setting-row">
-            <input id="includeInactiveRecipients" type="checkbox">
-            <span>非表示紹介者もまとめページに含める</span>
-        </label>
+            <label class="summary-setting-row">
+                <input id="includeInactiveRecipients" type="checkbox">
+                <span>非表示紹介者もまとめページに含める</span>
+            </label>
 
-        <p class="input-help-text">
-            表示順は紹介者管理の並び順をそのまま使います。<br>
-            非表示紹介者を含める設定をONにすると、TOPで非表示の紹介者もまとめページに表示されます。
-        </p>
+            <p class="input-help-text">
+                表示順は紹介者管理の並び順をそのまま使います。<br>
+                非表示紹介者を含める設定をONにすると、TOPで非表示の紹介者もまとめページに表示されます。
+            </p>
 
-        <div class="admin-button-row">
-            <button id="saveButton" class="button button-submit" type="button">
-                設定を保存
-            </button>
+            <div class="admin-button-row">
+                <button id="saveButton" class="button button-submit" type="button">
+                    設定を保存
+                </button>
 
-            <a class="button button-secondary" href="../summary.html" target="_blank" rel="noopener noreferrer">
-                まとめページを確認
-            </a>
+                <a class="button button-secondary button-center-text" href="../summary.html" target="_blank"
+                    rel="noopener noreferrer">
+                    まとめページを確認
+                </a>
+            </div>
         </div>
+
+        <a class="button button-secondary" href="index.html">
+            管理者メニューへ戻る
+        </a>
+
+        <a class="button button-secondary" href="../index.html">
+            トップへ戻る
+        </a>
+
     </div>
 
-    <a class="button button-secondary" href="index.html">
-        管理者メニューへ戻る
-    </a>
+    <script>
+        const adminKey = document.getElementById("adminKey");
+        const resultMessage = document.getElementById("resultMessage");
+        const settingsPanel = document.getElementById("settingsPanel");
+        const saveButton = document.getElementById("saveButton");
 
-    <a class="button button-secondary" href="../index.html">
-        トップへ戻る
-    </a>
+        const summaryEnabled = document.getElementById("summaryEnabled");
+        const showPhotoList = document.getElementById("showPhotoList");
+        const showMessageList = document.getElementById("showMessageList");
+        const showPdfButton = document.getElementById("showPdfButton");
+        const includeInactiveRecipients = document.getElementById("includeInactiveRecipients");
 
-</div>
+        adminKey.addEventListener("change", loadSettings);
+        saveButton.addEventListener("click", saveSettings);
 
-<script>
-const adminKey = document.getElementById("adminKey");
-const resultMessage = document.getElementById("resultMessage");
-const settingsPanel = document.getElementById("settingsPanel");
-const saveButton = document.getElementById("saveButton");
+        const savedKey = sessionStorage.getItem("adminKey");
 
-const summaryEnabled = document.getElementById("summaryEnabled");
-const showPhotoList = document.getElementById("showPhotoList");
-const showMessageList = document.getElementById("showMessageList");
-const showPdfButton = document.getElementById("showPdfButton");
-const includeInactiveRecipients = document.getElementById("includeInactiveRecipients");
+        if (savedKey) {
+            adminKey.value = savedKey;
+            loadSettings();
+        }
 
-adminKey.addEventListener("change", loadSettings);
-saveButton.addEventListener("click", saveSettings);
+        async function loadSettings() {
+            const key = adminKey.value.trim();
 
-const savedKey = sessionStorage.getItem("adminKey");
-
-if (savedKey) {
-    adminKey.value = savedKey;
-    loadSettings();
-}
-
-async function loadSettings() {
-    const key = adminKey.value.trim();
-
-    if (!key) {
-        resultMessage.textContent = "管理用パスキーを入力してください。";
-        return;
-    }
-
-    resultMessage.textContent = "設定を読み込み中です...";
-
-    try {
-        const response = await fetch(
-            `/api/admin_summary_settings?key=${encodeURIComponent(key)}&t=${Date.now()}`,
-            {
-                cache: "no-store"
+            if (!key) {
+                resultMessage.textContent = "管理用パスキーを入力してください。";
+                return;
             }
-        );
 
-        const data = await response.json();
+            resultMessage.textContent = "設定を読み込み中です...";
 
-        if (!response.ok || !data.ok) {
-            settingsPanel.hidden = true;
-            adminKey.hidden = false;
-            resultMessage.textContent = data.message || "設定を取得できませんでした。";
-            return;
+            try {
+                const response = await fetch(
+                    `/api/admin_summary_settings?key=${encodeURIComponent(key)}&t=${Date.now()}`,
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.ok) {
+                    settingsPanel.hidden = true;
+                    adminKey.hidden = false;
+                    resultMessage.textContent = data.message || "設定を取得できませんでした。";
+                    return;
+                }
+
+                sessionStorage.setItem("adminKey", key);
+                adminKey.hidden = true;
+                settingsPanel.hidden = false;
+
+                applySettings(data.settings || {});
+
+                resultMessage.textContent = "設定を読み込みました。";
+
+            } catch (error) {
+                settingsPanel.hidden = true;
+                resultMessage.textContent = "通信に失敗しました。";
+            }
         }
 
-        sessionStorage.setItem("adminKey", key);
-        adminKey.hidden = true;
-        settingsPanel.hidden = false;
+        async function saveSettings() {
+            const key = adminKey.value.trim();
 
-        applySettings(data.settings || {});
+            if (!key) {
+                resultMessage.textContent = "管理用パスキーを入力してください。";
+                return;
+            }
 
-        resultMessage.textContent = "設定を読み込みました。";
+            saveButton.disabled = true;
+            saveButton.textContent = "保存中...";
+            resultMessage.textContent = "設定を保存中です...";
 
-    } catch (error) {
-        settingsPanel.hidden = true;
-        resultMessage.textContent = "通信に失敗しました。";
-    }
-}
+            try {
+                const response = await fetch("/api/admin_summary_settings", {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        key,
+                        summary_enabled: summaryEnabled.checked,
+                        show_photo_list: showPhotoList.checked,
+                        show_message_list: showMessageList.checked,
+                        show_pdf_button: showPdfButton.checked,
+                        include_inactive_recipients: includeInactiveRecipients.checked
+                    })
+                });
 
-async function saveSettings() {
-    const key = adminKey.value.trim();
+                const data = await response.json();
 
-    if (!key) {
-        resultMessage.textContent = "管理用パスキーを入力してください。";
-        return;
-    }
+                if (!response.ok || !data.ok) {
+                    resultMessage.textContent = data.message || "保存に失敗しました。";
+                    return;
+                }
 
-    saveButton.disabled = true;
-    saveButton.textContent = "保存中...";
-    resultMessage.textContent = "設定を保存中です...";
+                applySettings(data.settings || {});
+                resultMessage.textContent = data.message || "設定を保存しました。";
 
-    try {
-        const response = await fetch("/api/admin_summary_settings", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify({
-                key,
-                summary_enabled: summaryEnabled.checked,
-                show_photo_list: showPhotoList.checked,
-                show_message_list: showMessageList.checked,
-                show_pdf_button: showPdfButton.checked,
-                include_inactive_recipients: includeInactiveRecipients.checked
-            })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.ok) {
-            resultMessage.textContent = data.message || "保存に失敗しました。";
-            return;
+            } catch (error) {
+                resultMessage.textContent = "通信に失敗しました。";
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = "設定を保存";
+            }
         }
 
-        applySettings(data.settings || {});
-        resultMessage.textContent = data.message || "設定を保存しました。";
+        function applySettings(settings) {
+            summaryEnabled.checked = settings.summary_enabled !== false;
+            showPhotoList.checked = settings.show_photo_list !== false;
+            showMessageList.checked = settings.show_message_list !== false;
+            showPdfButton.checked = settings.show_pdf_button !== false;
+            includeInactiveRecipients.checked = Boolean(settings.include_inactive_recipients);
+        }
+    </script>
 
-    } catch (error) {
-        resultMessage.textContent = "通信に失敗しました。";
-    } finally {
-        saveButton.disabled = false;
-        saveButton.textContent = "設定を保存";
-    }
-}
-
-function applySettings(settings) {
-    summaryEnabled.checked = settings.summary_enabled !== false;
-    showPhotoList.checked = settings.show_photo_list !== false;
-    showMessageList.checked = settings.show_message_list !== false;
-    showPdfButton.checked = settings.show_pdf_button !== false;
-    includeInactiveRecipients.checked = Boolean(settings.include_inactive_recipients);
-}
-</script>
-
-<script src="/site_nav.js" defer></script>
+    <script src="/site_nav.js" defer></script>
 </body>
+
 </html>
