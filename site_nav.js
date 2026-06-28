@@ -19,6 +19,81 @@
         toggleButton.setAttribute('aria-expanded', String(isOpen));
     }
 
+    function createRecipientDropdown(recipients) {
+        if (!Array.isArray(recipients) || recipients.length === 0) {
+            return;
+        }
+
+        if (menu.querySelector('[data-recipient-dropdown]')) {
+            return;
+        }
+
+        const dropdown = document.createElement('details');
+        dropdown.className = 'site-nav-dropdown';
+        dropdown.setAttribute('data-recipient-dropdown', '');
+
+        const summary = document.createElement('summary');
+        summary.textContent = '紹介者ページ';
+        dropdown.appendChild(summary);
+
+        const list = document.createElement('div');
+        list.className = 'site-nav-dropdown-list';
+
+        recipients.forEach(function (recipient) {
+            const id = String(recipient && recipient.id ? recipient.id : '').trim();
+            const name = String(recipient && recipient.name ? recipient.name : '').trim();
+
+            if (!id || !name) {
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = '/person.html?id=' + encodeURIComponent(id);
+            link.textContent = name;
+            list.appendChild(link);
+        });
+
+        if (!list.children.length) {
+            return;
+        }
+
+        dropdown.appendChild(list);
+
+        const topLink = menu.querySelector('a[href="/index.html"]');
+
+        if (topLink && topLink.nextSibling) {
+            menu.insertBefore(dropdown, topLink.nextSibling);
+            return;
+        }
+
+        if (topLink) {
+            menu.appendChild(dropdown);
+            return;
+        }
+
+        menu.insertBefore(dropdown, menu.firstChild);
+    }
+
+    async function loadRecipientDropdown() {
+        try {
+            const response = await fetch('/api/recipients', {
+                headers: {
+                    'accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                return;
+            }
+
+            createRecipientDropdown(data.recipients || []);
+        } catch (error) {
+            // ナビ本体の表示を止めないため、紹介者リスト取得失敗時は何もしない
+        }
+    }
+
     toggleButton.addEventListener('click', function () {
         setMenuOpen(!nav.classList.contains('is-open'));
     });
@@ -32,12 +107,22 @@
     document.addEventListener('click', function (event) {
         if (!nav.contains(event.target)) {
             setMenuOpen(false);
+
+            menu.querySelectorAll('details[open]').forEach(function (details) {
+                details.open = false;
+            });
         }
     });
 
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
             setMenuOpen(false);
+
+            menu.querySelectorAll('details[open]').forEach(function (details) {
+                details.open = false;
+            });
         }
     });
+
+    loadRecipientDropdown();
 })();
