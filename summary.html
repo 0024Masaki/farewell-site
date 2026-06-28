@@ -9,6 +9,27 @@
 
 <body>
 
+<header class="site-nav" data-site-nav>
+    <a class="site-nav-brand" href="/index.html">記念サイト</a>
+
+    <button
+        class="site-nav-toggle"
+        type="button"
+        aria-controls="siteNavMenu"
+        aria-expanded="false"
+        data-site-nav-toggle>
+        <span class="site-nav-toggle-icon">☰</span>
+        <span class="site-nav-toggle-text">メニュー</span>
+    </button>
+
+    <nav id="siteNavMenu" class="site-nav-links" data-site-nav-menu>
+        <a href="/index.html">TOP</a>
+        <a href="/summary.html">投稿まとめ</a>
+        <a href="/admin/index.html">管理者</a>
+    </nav>
+</header>
+
+
 <div class="card wide-card summary-card">
 
     <h1>みんなの投稿まとめ</h1>
@@ -59,6 +80,7 @@
 
     <section id="photoPanel" class="summary-panel summary-photo-panel"></section>
     <section id="messagePanel" class="summary-panel summary-message-panel is-hidden"></section>
+    <section id="combinedPanel" class="summary-panel summary-combined-panel is-hidden"></section>
 
     <a class="button button-secondary summary-back-button" href="index.html">
         トップへ戻る
@@ -79,6 +101,7 @@ const printAllButton = document.getElementById("printAllButton");
 const cancelPdfButton = document.getElementById("cancelPdfButton");
 const photoPanel = document.getElementById("photoPanel");
 const messagePanel = document.getElementById("messagePanel");
+const combinedPanel = document.getElementById("combinedPanel");
 
 let summaryData = null;
 let summarySettings = null;
@@ -139,6 +162,7 @@ async function loadSummary() {
         renderToolbar(summarySettings);
         renderPhotoPanel(data.recipients || []);
         renderMessagePanel(data.recipients || []);
+        renderCombinedPanel(data.recipients || []);
 
         if ((data.recipients || []).length === 0) {
             resultMessage.textContent = "表示できる紹介者がありません。";
@@ -182,6 +206,7 @@ function showSummaryMode(mode) {
     if (mode === "photos") {
         photoPanel.classList.remove("is-hidden");
         messagePanel.classList.add("is-hidden");
+        combinedPanel.classList.add("is-hidden");
         photoListButton.classList.remove("button-secondary");
         messageListButton.classList.add("button-secondary");
         pdfOptionPanel.hidden = true;
@@ -190,9 +215,101 @@ function showSummaryMode(mode) {
 
     photoPanel.classList.add("is-hidden");
     messagePanel.classList.remove("is-hidden");
+    combinedPanel.classList.add("is-hidden");
     photoListButton.classList.add("button-secondary");
     messageListButton.classList.remove("button-secondary");
     pdfOptionPanel.hidden = true;
+}
+
+function createPhotoGrid(photos) {
+    if (!photos || photos.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "summary-empty-text";
+        empty.textContent = "投稿写真はまだありません。";
+        return empty;
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "summary-photo-grid";
+
+    photos.forEach(photo => {
+        const card = document.createElement("div");
+        card.className = "summary-photo-card";
+
+        const image = document.createElement("img");
+        image.src = buildDriveThumbnailUrl(photo.drive_file_id, 900);
+        image.alt = "投稿写真";
+        image.loading = "lazy";
+        image.decoding = "async";
+
+        const info = document.createElement("div");
+        info.className = "summary-photo-info";
+
+        const name = document.createElement("div");
+        name.className = "summary-photo-name";
+        name.textContent = photo.name || "匿名";
+
+        const comment = document.createElement("div");
+        comment.className = "summary-photo-comment";
+        comment.textContent = photo.comment || "";
+
+        const date = document.createElement("div");
+        date.className = "summary-photo-date";
+        date.textContent = formatDate(photo.created_at);
+
+        info.appendChild(name);
+        info.appendChild(comment);
+        info.appendChild(date);
+
+        card.appendChild(image);
+        card.appendChild(info);
+        grid.appendChild(card);
+    });
+
+    return grid;
+}
+
+function createMessageList(messages) {
+    if (!messages || messages.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "summary-empty-text";
+        empty.textContent = "メッセージはまだありません。";
+        return empty;
+    }
+
+    const list = document.createElement("div");
+    list.className = "summary-message-list";
+
+    messages.forEach(message => {
+        const card = document.createElement("div");
+        card.className = "summary-message-card";
+
+        const name = document.createElement("div");
+        name.className = "summary-message-name";
+        name.textContent = message.name || "匿名";
+
+        const text = document.createElement("div");
+        text.className = "summary-message-text";
+        text.textContent = message.message || "";
+
+        const date = document.createElement("div");
+        date.className = "summary-message-date";
+        date.textContent = formatDate(message.created_at);
+
+        card.appendChild(name);
+        card.appendChild(text);
+        card.appendChild(date);
+        list.appendChild(card);
+    });
+
+    return list;
+}
+
+function createSummarySubTitle(text) {
+    const title = document.createElement("h3");
+    title.className = "summary-sub-title";
+    title.textContent = text;
+    return title;
 }
 
 function renderPhotoPanel(recipients) {
@@ -203,56 +320,7 @@ function renderPhotoPanel(recipients) {
         section.className = "summary-recipient-section";
 
         section.appendChild(createRecipientHeader(recipient));
-
-        const photos = recipient.photos || [];
-
-        if (photos.length === 0) {
-            const empty = document.createElement("p");
-            empty.className = "summary-empty-text";
-            empty.textContent = "投稿写真はまだありません。";
-            section.appendChild(empty);
-            photoPanel.appendChild(section);
-            return;
-        }
-
-        const grid = document.createElement("div");
-        grid.className = "summary-photo-grid";
-
-        photos.forEach(photo => {
-            const card = document.createElement("div");
-            card.className = "summary-photo-card";
-
-            const image = document.createElement("img");
-            image.src = buildDriveThumbnailUrl(photo.drive_file_id, 900);
-            image.alt = "投稿写真";
-            image.loading = "lazy";
-            image.decoding = "async";
-
-            const info = document.createElement("div");
-            info.className = "summary-photo-info";
-
-            const name = document.createElement("div");
-            name.className = "summary-photo-name";
-            name.textContent = photo.name || "匿名";
-
-            const comment = document.createElement("div");
-            comment.className = "summary-photo-comment";
-            comment.textContent = photo.comment || "";
-
-            const date = document.createElement("div");
-            date.className = "summary-photo-date";
-            date.textContent = formatDate(photo.created_at);
-
-            info.appendChild(name);
-            info.appendChild(comment);
-            info.appendChild(date);
-
-            card.appendChild(image);
-            card.appendChild(info);
-            grid.appendChild(card);
-        });
-
-        section.appendChild(grid);
+        section.appendChild(createPhotoGrid(recipient.photos || []));
         photoPanel.appendChild(section);
     });
 }
@@ -265,45 +333,31 @@ function renderMessagePanel(recipients) {
         section.className = "summary-recipient-section";
 
         section.appendChild(createRecipientHeader(recipient));
+        section.appendChild(createMessageList(recipient.messages || []));
+        messagePanel.appendChild(section);
+    });
+}
 
-        const messages = recipient.messages || [];
+function renderCombinedPanel(recipients) {
+    combinedPanel.innerHTML = "";
 
-        if (messages.length === 0) {
-            const empty = document.createElement("p");
-            empty.className = "summary-empty-text";
-            empty.textContent = "メッセージはまだありません。";
-            section.appendChild(empty);
-            messagePanel.appendChild(section);
-            return;
+    recipients.forEach(recipient => {
+        const section = document.createElement("article");
+        section.className = "summary-recipient-section summary-combined-section";
+
+        section.appendChild(createRecipientHeader(recipient));
+
+        if (summarySettings.show_photo_list) {
+            section.appendChild(createSummarySubTitle("投稿写真"));
+            section.appendChild(createPhotoGrid(recipient.photos || []));
         }
 
-        const list = document.createElement("div");
-        list.className = "summary-message-list";
+        if (summarySettings.show_message_list) {
+            section.appendChild(createSummarySubTitle("メッセージ"));
+            section.appendChild(createMessageList(recipient.messages || []));
+        }
 
-        messages.forEach(message => {
-            const card = document.createElement("div");
-            card.className = "summary-message-card";
-
-            const name = document.createElement("div");
-            name.className = "summary-message-name";
-            name.textContent = message.name || "匿名";
-
-            const text = document.createElement("div");
-            text.className = "summary-message-text";
-            text.textContent = message.message || "";
-
-            const date = document.createElement("div");
-            date.className = "summary-message-date";
-            date.textContent = formatDate(message.created_at);
-
-            card.appendChild(name);
-            card.appendChild(text);
-            card.appendChild(date);
-            list.appendChild(card);
-        });
-
-        section.appendChild(list);
-        messagePanel.appendChild(section);
+        combinedPanel.appendChild(section);
     });
 }
 
@@ -383,7 +437,10 @@ function clearPrintMode() {
 }
 
 function waitForSummaryImages() {
-    const images = [...photoPanel.querySelectorAll("img")];
+    const images = [
+        ...photoPanel.querySelectorAll("img"),
+        ...combinedPanel.querySelectorAll("img")
+    ];
 
     if (images.length === 0) {
         return Promise.resolve();
@@ -430,5 +487,6 @@ function formatDate(value) {
 }
 </script>
 
+<script src="/site_nav.js" defer></script>
 </body>
 </html>

@@ -9,6 +9,28 @@
 
 <body>
 
+<header class="site-nav site-nav-admin" data-site-nav>
+    <a class="site-nav-brand" href="/admin/index.html">管理者メニュー</a>
+
+    <button
+        class="site-nav-toggle"
+        type="button"
+        aria-controls="siteNavMenu"
+        aria-expanded="false"
+        data-site-nav-toggle>
+        <span class="site-nav-toggle-icon">☰</span>
+        <span class="site-nav-toggle-text">メニュー</span>
+    </button>
+
+    <nav id="siteNavMenu" class="site-nav-links" data-site-nav-menu>
+        <a href="/admin/index.html">管理者TOP</a>
+        <a href="/admin/summary_settings.html">まとめ設定</a>
+        <a href="/summary.html">投稿まとめ</a>
+        <a href="/index.html">サイトTOP</a>
+    </nav>
+</header>
+
+
 <div class="card wide-card">
 
 <h1>管理者用メッセージ一覧</h1>
@@ -137,5 +159,6 @@ function formatDate(value) {
 }
 </script>
 
+<script src="/site_nav.js" defer></script>
 </body>
 </html>

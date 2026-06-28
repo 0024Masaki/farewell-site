@@ -9,6 +9,27 @@
 
 <body>
 
+<header class="site-nav" data-site-nav>
+    <a class="site-nav-brand" href="/index.html">記念サイト</a>
+
+    <button
+        class="site-nav-toggle"
+        type="button"
+        aria-controls="siteNavMenu"
+        aria-expanded="false"
+        data-site-nav-toggle>
+        <span class="site-nav-toggle-icon">☰</span>
+        <span class="site-nav-toggle-text">メニュー</span>
+    </button>
+
+    <nav id="siteNavMenu" class="site-nav-links" data-site-nav-menu>
+        <a href="/index.html">TOP</a>
+        <a href="/summary.html">投稿まとめ</a>
+        <a href="/admin/index.html">管理者</a>
+    </nav>
+</header>
+
+
 <div class="card">
 
     <h1>写真投稿</h1>
@@ -395,5 +416,6 @@ function getReadableFileSize(bytes) {
 
 </script>
 
+<script src="/site_nav.js" defer></script>
 </body>
 </html>
