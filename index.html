@@ -615,6 +615,15 @@
         }
 
 
+        function isSummaryLinkVisible(settings) {
+            if (!settings || settings.summary_enabled === false) {
+                return false;
+            }
+
+            return settings.show_photo_list !== false || settings.show_message_list !== false;
+        }
+
+
         async function appendSummaryLink(list) {
             try {
                 const response = await fetch(`/api/summary?meta=1&t=${Date.now()}`, {
@@ -623,7 +632,7 @@
 
                 const data = await response.json();
 
-                if (!response.ok || !data.ok || !data.settings || !data.settings.summary_enabled) {
+                if (!response.ok || !data.ok || !isSummaryLinkVisible(data.settings)) {
                     return;
                 }
 

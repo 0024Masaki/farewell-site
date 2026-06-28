@@ -2296,3 +2296,10 @@ body.has-site-nav{
         padding-top:0 !important;
     }
 }
+
+/* ===== まとめページ設定連動 ===== */
+.site-nav-links a[hidden],
+.summary-toolbar button[hidden],
+.summary-option-grid button[hidden]{
+    display:none !important;
+}

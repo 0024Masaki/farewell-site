@@ -169,20 +169,26 @@ async function loadSummary() {
             return;
         }
 
+        const showPhotos = summarySettings.show_photo_list !== false;
+        const showMessages = summarySettings.show_message_list !== false;
+
+        if (!showPhotos && !showMessages) {
+            summaryToolbar.hidden = true;
+            resultMessage.textContent = "写真一覧とメッセージ一覧がどちらも非表示に設定されています。";
+            return;
+        }
+
         summaryToolbar.hidden = false;
         resultMessage.textContent = `${data.recipients.length}名分の投稿を表示できます。`;
 
-        if (summarySettings.show_photo_list) {
+        if (showPhotos) {
             showSummaryMode("photos");
             return;
         }
 
-        if (summarySettings.show_message_list) {
+        if (showMessages) {
             showSummaryMode("messages");
-            return;
         }
-
-        resultMessage.textContent = "写真一覧とメッセージ一覧がどちらも非表示に設定されています。";
 
     } catch (error) {
         resultMessage.textContent = "通信エラーが発生しました。";
@@ -190,16 +196,22 @@ async function loadSummary() {
 }
 
 function renderToolbar(settings) {
-    photoListButton.hidden = !settings.show_photo_list;
-    messageListButton.hidden = !settings.show_message_list;
-    pdfMenuButton.hidden = !settings.show_pdf_button;
+    const showPhotos = settings.show_photo_list !== false;
+    const showMessages = settings.show_message_list !== false;
+    const showPdf = settings.show_pdf_button !== false;
+    const hasVisibleList = showPhotos || showMessages;
 
-    printPhotosButton.hidden = !settings.show_photo_list;
-    printMessagesButton.hidden = !settings.show_message_list;
+    photoListButton.hidden = !showPhotos;
+    messageListButton.hidden = !showMessages;
 
-    if (!settings.show_photo_list && !settings.show_message_list) {
-        printAllButton.hidden = true;
-    }
+    pdfMenuButton.hidden = !showPdf || !hasVisibleList;
+    pdfOptionPanel.hidden = true;
+
+    printPhotosButton.hidden = !showPdf || !showPhotos;
+    printMessagesButton.hidden = !showPdf || !showMessages;
+    printAllButton.hidden = !showPdf || !(showPhotos && showMessages);
+
+    summaryToolbar.hidden = !hasVisibleList && !showPdf;
 }
 
 function showSummaryMode(mode) {
@@ -399,13 +411,23 @@ async function printSummary(mode) {
         return;
     }
 
-    if (mode === "photos" && !summarySettings.show_photo_list) {
+    if (summarySettings.show_pdf_button === false) {
+        resultMessage.textContent = "PDF出力は非表示に設定されています。";
+        return;
+    }
+
+    if (mode === "photos" && summarySettings.show_photo_list === false) {
         resultMessage.textContent = "写真一覧は非表示に設定されています。";
         return;
     }
 
-    if (mode === "messages" && !summarySettings.show_message_list) {
+    if (mode === "messages" && summarySettings.show_message_list === false) {
         resultMessage.textContent = "メッセージ一覧は非表示に設定されています。";
+        return;
+    }
+
+    if (mode === "all" && (summarySettings.show_photo_list === false || summarySettings.show_message_list === false)) {
+        resultMessage.textContent = "すべて出力は、写真一覧とメッセージ一覧の両方が表示ONのときだけ使用できます。";
         return;
     }
 

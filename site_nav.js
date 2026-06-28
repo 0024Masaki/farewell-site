@@ -19,6 +19,47 @@
         toggleButton.setAttribute('aria-expanded', String(isOpen));
     }
 
+    function isSummaryVisible(settings) {
+        if (!settings || settings.summary_enabled === false) {
+            return false;
+        }
+
+        return settings.show_photo_list !== false || settings.show_message_list !== false;
+    }
+
+    function applySummaryLinkVisibility(settings) {
+        const visible = isSummaryVisible(settings);
+
+        menu.querySelectorAll('a[href="/summary.html"]').forEach(function (link) {
+            link.hidden = !visible;
+            link.classList.toggle('is-hidden', !visible);
+            link.setAttribute('aria-hidden', String(!visible));
+            link.tabIndex = visible ? 0 : -1;
+        });
+    }
+
+    async function loadSummaryNavSettings() {
+        try {
+            const response = await fetch('/api/summary?meta=1&t=' + Date.now(), {
+                cache: 'no-store',
+                headers: {
+                    'accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                applySummaryLinkVisibility(null);
+                return;
+            }
+
+            applySummaryLinkVisibility(data.settings || null);
+        } catch (error) {
+            applySummaryLinkVisibility(null);
+        }
+    }
+
     function createRecipientDropdown(recipients) {
         if (!Array.isArray(recipients) || recipients.length === 0) {
             return;
@@ -124,5 +165,6 @@
         }
     });
 
+    loadSummaryNavSettings();
     loadRecipientDropdown();
 })();
