@@ -24,15 +24,6 @@ export async function onRequestGet(context) {
             });
         }
 
-        if (!settings.summary_enabled) {
-            return jsonResponse({
-                ok: true,
-                settings,
-                recipients: [],
-                message: "まとめページは現在表示されていません。"
-            });
-        }
-
         const recipients =
             await loadRecipients(db, settings.include_inactive_recipients);
 

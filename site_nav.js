@@ -20,11 +20,8 @@
     }
 
     function isSummaryVisible(settings) {
-        if (!settings || settings.summary_enabled === false) {
-            return false;
-        }
-
-        return settings.show_photo_list !== false || settings.show_message_list !== false;
+        // ハンバーガーメニューの「投稿まとめ」は、リンク表示設定だけで制御する。
+        return Boolean(settings) && settings.summary_enabled !== false;
     }
 
     function applySummaryLinkVisibility(settings) {

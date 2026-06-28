@@ -154,11 +154,6 @@ async function loadSummary() {
         summaryData = data;
         summarySettings = data.settings || {};
 
-        if (!summarySettings.summary_enabled) {
-            resultMessage.textContent = data.message || "まとめページは現在表示されていません。";
-            return;
-        }
-
         renderToolbar(summarySettings);
         renderPhotoPanel(data.recipients || []);
         renderMessagePanel(data.recipients || []);

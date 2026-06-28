@@ -616,11 +616,8 @@
 
 
         function isSummaryLinkVisible(settings) {
-            if (!settings || settings.summary_enabled === false) {
-                return false;
-            }
-
-            return settings.show_photo_list !== false || settings.show_message_list !== false;
+            // TOPカードの表示可否だけを、管理者設定の「TOPページとメニューにリンクを表示する」で判定する。
+            return Boolean(settings) && settings.summary_enabled !== false;
         }
 
 
